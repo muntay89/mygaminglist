@@ -1,0 +1,8 @@
+$uri = "http://localhost:8000/api/v1/reviews/game/13"
+$headers = @{
+    "Content-Type" = "application/json"
+}
+
+$bodyJson = $body | ConvertTo-Json
+
+Invoke-WebRequest -Uri $uri -Method Get -Headers $headers -Body $bodyJson
