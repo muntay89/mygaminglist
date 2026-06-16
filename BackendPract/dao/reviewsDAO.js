@@ -16,13 +16,15 @@ export default class ReviewsDAO {
     }
   }
 
-  static async addReview(gameId, user, review, rating) {
+  static async addReview(gameId, userId, username, review, rating) {
     try {
       const reviewDoc = {
         gameId: gameId,
-        user: user,
+        userId: new ObjectId(userId),
+        username: username,
         review: review,
         rating: rating,
+        createdAt: new Date(),
       }
       console.log("adding")
       return await reviews.insertOne(reviewDoc)
@@ -46,8 +48,8 @@ export default class ReviewsDAO {
     const objectId = new ObjectId(reviewId)
     try {
       const updateResponse = await reviews.updateOne(
-        { _id: objectId },
-        { $set: { user: user, review: review, rating: rating } }
+        { _id: new ObjectId(reviewId), userId: new ObjectId(user) },
+        { $set: { review: review, rating: rating } }
       )
 
       return updateResponse
@@ -57,13 +59,11 @@ export default class ReviewsDAO {
     }
   }
 
-  static async deleteReview(reviewId) {
+  static async deleteReview(reviewId, user) {
     const objectId = new ObjectId(reviewId)
     try {
-      const deleteResponse = await reviews.deleteOne({
-        _id: objectId,
-      })
-
+      const deleteResponse = await reviews.deleteOne({ _id: new ObjectId(reviewId), 
+        userId: new ObjectId(user) })
       return deleteResponse
     } catch (e) {
       console.error(`Unable to delete review: ${e}`)
@@ -71,9 +71,19 @@ export default class ReviewsDAO {
     }
   }
 
-  static async getReviewsBygameId(gameId) {
+  static async getReviewsBygameId( gameId) {
     try {
-      const cursor = await reviews.find({ gameId: parseInt(gameId) })
+      const cursor = await reviews.find({gameId: parseInt(gameId) })
+      return cursor.toArray()
+    } catch (e) {
+      console.error(`Unable to get review: ${e}`)
+      return { error: e }
+    }
+  }
+
+  static async getReviewsByIdAndUser(gameId, userId) {
+    try {
+      const cursor = await reviews.find({gameId: parseInt(gameId), userId: new ObjectId(userId)})
       return cursor.toArray()
     } catch (e) {
       console.error(`Unable to get review: ${e}`)

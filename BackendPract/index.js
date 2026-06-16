@@ -1,17 +1,18 @@
+import "./env.js";
 import app from "./server.js"
+import router from "./routes/auth.route.js";
+import session from "express-session";
 import mongodb from "mongodb"
 import ReviewsDAO from "./dao/reviewsDAO.js"
 import ListDAO from "./dao/listDAO.js"
-import dotenv from "dotenv";
-dotenv.config();
+import UsersDao from "./dao/usersDAO.js";
+
 
 const MongoClient = mongodb.MongoClient
-const MONGO_PASSW = process.env.MONGO_PASSWORD
-const uri = `mongodb+srv://montebradford2004:${MONGO_PASSW}@cluster0.pzngoil.mongodb.net/`
+// const MONGO_PASSW = process.env.MONGO_PASSWORD
+const uri = process.env.MONGO_URI
 
-console.log(process.env.MONGO_USERNAME)
-console.log(process.env.MONGO_PASSWORD)
-console.log(process.env.MONGO_CLUSTER)
+
 
 const port = process.env.PORT || 8000
 
@@ -26,6 +27,7 @@ MongoClient.connect(
         process.exit(1)
     })
     .then(async client => {
+        await UsersDao.injectDB(client)
         await ReviewsDAO.injectDB(client)
         await ListDAO.injectDB(client)
         app.listen(port, () => {
