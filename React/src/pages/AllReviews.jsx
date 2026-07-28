@@ -149,7 +149,7 @@ return(
           <p className='review-game' id = 'public-reviews-game'><u>{review.gameTitle}</u></p>
           {/* <p className='review-bold'>Review</p> */}
           {editID === review._id && isLoggedIn && review.userId === user.id
-          ? (<><textarea id = "new_review" className='edit-input' value = {editReviewText} onChange={(e) => setReviewText(e.target.value)}></textarea>
+          ? (<><textarea id = "new_review" className='edit-input' value = {editReviewText} onChange={(e) => setEditReviewText(e.target.value)}></textarea>
               <div className="review-final">
                 <StarRatingInput rating = {editRating} setRating = {setEditRating}></StarRatingInput>
                 <div className='save-cont' style={{gap: '15px'}}>
