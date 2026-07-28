@@ -19,7 +19,7 @@ export default function MyReviews (props) {
   let {gameID} = useParams()
 
   useEffect(()=> {
-    props.setIntro(`${props.selected} - Reviews`)
+    props.setIntro(`My Reviews`)
     console.log('reviews', reviews.length)
   }, [props.selected])
 
