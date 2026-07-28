@@ -28,7 +28,7 @@ export default function MyReviews (props) {
         try{
           setReviewsLoading(true)
           // console.log(props.myAPI(gameID))
-          const response = await api.get(`/reviews/my/game/${gameID}`)
+          const response = await api.get(`/reviews/my/game/`)
           setReviews(response.data)
           console.log('reviewsContent', reviews, user.id)
         }catch(error){
@@ -122,10 +122,10 @@ return(
 <div className='review-background'>
   <ul className='list-categories' id = 'review-categories'>
           <li style = {{textDecoration: 'underline', fontSize: '90%'}}>My Reviews</li>
-          <Link to = {`/mygaminglist/reviews/${gameID}`} style = {{textDecoration: 'none', color: 'hsl(0, 96%, 29%)', fontSize: '80%'}}>
+          {/* <Link to = {`/mygaminglist/reviews/${gameID}`} style = {{textDecoration: 'none', color: 'hsl(0, 96%, 29%)', fontSize: '80%'}}>
             <li>Reviews</li></Link>
           <Link to = {`/mygaminglist/newreview/${gameID}`} style = {{textDecoration: 'none', color: 'hsl(0, 96%, 29%)', fontSize: '80%'}}>
-            <li>New Review</li></Link>
+            <li>New Review</li></Link> */}
   </ul>
     {reviews.length > 0 ? (reviews.map((review) => (
       <div className='review-row' key = {review._id}>
@@ -146,7 +146,7 @@ return(
           </span>)}
         </div>
         <div id = {review._id} className='review-content'>
-          <p className='review-game' id = 'public-reviews-game'><u>{props.selected}</u></p>
+          <p className='review-game' id = 'public-reviews-game'><u>{review.gameTitle}</u></p>
           {/* <p className='review-bold'>Review</p> */}
           {editID === review._id && isLoggedIn && review.userId === user.id
           ? (<><textarea id = "new_review" className='edit-input' value = {editReviewText} onChange={(e) => setReviewText(e.target.value)}></textarea>

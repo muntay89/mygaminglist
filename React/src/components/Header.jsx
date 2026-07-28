@@ -1,17 +1,18 @@
-import { Link , useNavigate} from "react-router-dom";
+import { Link, useNavigate} from "react-router-dom";
 import { FaBars } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 
 export default function Header({ handleClick }) {
-  const { user, isLoggedIn, logout, loading } = useAuth();
-  const navigate = useNavigate();
-  console.log(`funky, ${isLoggedIn}`)
+  const { user, isLoggedIn, logout, loading } = useAuth()
+  const navigate = useNavigate()
   const handleLogout = async () => {
     await logout();
     navigate("/mygaminglist/login");
   }
-  if (loading) return null
 
+  const goProfile = () => {
+    navigate(`/mygaminglist/profile/${user.username}`)
+  }
   return(
     <span className="top">
         <h2 className="title">
@@ -28,9 +29,7 @@ export default function Header({ handleClick }) {
               </Link>
             </>) : (
             <>
-            <h2 style={{color: 'hsl(0, 96%, 29%)', fontSize: '30px',
-              marginRight: '25px'
-            }}>{user.username}</h2>
+            <Link id = 'profile-name' to = {`/mygaminglist/profile/${user.username}`}>{user.username}</Link>
             <Link to = "/mygaminglist/list" id = "list"><FaBars className='list-icon'/></Link>
             <button
               className="headerbutt"

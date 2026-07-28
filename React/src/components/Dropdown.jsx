@@ -1,48 +1,76 @@
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { FaXbox, FaPlaystation, FaWindows, FaGamepad } from "react-icons/fa";
+import { SiNintendoswitch } from "react-icons/si";
 
-export default function Dropdown(props) {
+const platforms = [
+  {
+    name: "All",
+    value: "",
+    icon: <FaGamepad/>,
+  },
+  {
+    name: "Xbox",
+    value: "&platforms=14,1,186",
+    icon: <FaXbox />,
+  },
+  {
+    name: "PlayStation",
+    value: "&platforms=18,16,19,187",
+    icon: <FaPlaystation />,
+  },
+  {
+    name: "Nintendo",
+    value: "&platforms=7,8,9,10,11,83,43,105,24",
+    icon: <SiNintendoswitch />,
+  },
+  {
+    name: "PC",
+    value: "&platforms=5,6,4",
+    icon: <FaWindows />,
+  },
+]
+
+function PlatformDropdown(props) {
   
-  const navigate = useNavigate()
-  
-  function changePage(number, platform){
-    const fetch = async() => {
-      try{
-        props.setLoading(true)
-        props.setFilter(platform)
-        const newAPI = props.genAPI(number, props.search, props.filter)
-        props.setAPI(newAPI)
-        console.log('platform', platform)
-      }
-      catch{
-        alert('error')
-      }
-      finally{
-        navigate(`/mygaminglist/games/page/${number}`)
-        props.setTest(true)
-      }
-    }
-    fetch()
+  const [open, setOpen] = useState(false);
+  const selected = platforms.find((platform) => platform.value === props.filter) 
+  ?? platforms[0]
+  function handleSelect(platform) {
+    props.setFilter(platform.value);
+    setOpen(false);
   }
 
-  return(
-    <ul id="dropdown" style={{display: props.visible ? 'flex': 'none',
-    flexDirection: props.visible ? 'column' : 'row' }}
-    onMouseEnter = {props.onMouseEnter} onMouseLeave = {props.onMouseLeave}>
-            <li onClick={()=> changePage(1, '&platforms=186')}>
-              <a href="#" className="consoles" id="xbox"> Xbox Series X/S </a>
-            </li>
-            <li onClick={()=> changePage(1, '&platforms=187')}>
-              <a href="#" className="consoles" id="ps">PlayStation 5</a>
-            </li>
-            <li onClick={()=> changePage(1, '&platforms=7')}>
-              <a href="#" className="consoles" id="nintendo">Nintendo Switch</a>
-            </li>
-            <li onClick={()=> changePage(1, '&platforms=4')}>
-              <a href="#" className="consoles" id="pc">PC</a>
-              </li>
-            <li>
-              <a href="#" className="consoles" id="other">More...</a>
-              </li>
-          </ul>
+  return (
+    <div className="platform-dropdown">
+      <button
+      style = {{borderRadius: open ? '10px 0px 0px 0px' : '10px 0px 0px 10px',
+      }}
+        type="button"
+        className="platform-dropdown-button"
+        onClick={() => setOpen(!open)}
+      >
+        <span className="platform-icon">{selected.icon}</span>
+        <span>{selected.name}</span>
+        <span className="dropdown-arrow">▾</span>
+      </button>
+
+      {open && (
+        <div className="platform-dropdown-menu">
+          {platforms.map((platform) => (
+            <button
+              key={platform.name}
+              type="button"
+              className="platform-dropdown-option"
+              onClick={() => handleSelect(platform)}
+            >
+              <span className="platform-icon">{platform.icon}</span>
+              <span>{platform.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
+
+export default PlatformDropdown;

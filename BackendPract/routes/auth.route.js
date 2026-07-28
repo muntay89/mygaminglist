@@ -13,21 +13,26 @@ function validateCredentials(req, res, next){
     return res.status(400).json({ error: 'Invalid credentials format' })
   }
 
-  if (password.length < 8 || password.length > 72) {
-    return res.status(400).json({ error: "Password must be 8-72 characters."})
+  if (password.length < 10 || password.length > 72) {
+    return res.status(400).json({ error: "Password must be 10-72 characters."})
   }
   next()
 }
 
+function normalizeUsername(username) {
+  return username.trim().toLowerCase();
+}
+
 router.post("/signup", validateCredentials, async (req, res) => {
   try{
-    const {username, password} = req.body ?? {}
+    const username = normalizeUsername(req.body.username)
+    const password = req.body.password
     
     if (!USERNAME.test(username ?? "")) {
       return res.status(400).json({error: "Invalid username"})
     }
-    if (typeof password != "string" || password.length < 8){
-      return res.status(400).json({error: "Password must be at least 8 characters"})
+    if (typeof password != "string" || password.length < 10){
+      return res.status(400).json({error: "Password must be at least 10 characters"})
     }
 
     const exists = await UsersDao.findByUsername(username)
@@ -48,11 +53,11 @@ router.post("/signup", validateCredentials, async (req, res) => {
 
 router.post("/login", validateCredentials, async(req, res) => {
   try{
-    const { username, password } = req.body ?? {};
-
+    const username = normalizeUsername(req.body.username)
+    const password = req.body.password
     const user = await UsersDao.findByUsername(username)
     if (!user) {
-      return res.status(400).json({ error: "No account under that username" });
+      return res.status(400).json({ error: "No account under that username" })
     }
 
     const match = await bcrypt.compare(password ?? "", user.passwordHash)
@@ -68,11 +73,22 @@ router.post("/login", validateCredentials, async(req, res) => {
 })
 
 router.post("/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.clearCookie("mgl.sid");
-    res.json({ ok: true });
-  });
-});
+  const isProd = process.env.NODE_ENV === "production"
+  req.session.destroy((error) => {
+    if (error) {
+      console.error('Logout failed: ', error)
+      return res.status(500).json({
+        error: "Unable to log out",
+      })
+    }
+    res.clearCookie("mgl.sid", {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+    })
+    res.json({ ok: true })
+  })
+})
 
 router.get("/me", (req, res) => {
   if (!req.session?.user){

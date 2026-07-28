@@ -2,7 +2,7 @@ export default function Footer() {
 
   return(
     <footer id="footer">
-        <span id="copyright">© 2023</span>
+        <span id="copyright">© 2026</span>
         <span id="foottitle">MyVideoGameList</span>
         <span id="icons">
           {/* <i className="fa-brands fa-apple fa-lg" style="color: #ffffff"></i>

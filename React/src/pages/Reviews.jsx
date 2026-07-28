@@ -1,12 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Loader from "../components/Loader";
 import { api } from "../api/client";
-import { FaStar, FaHeartBroken } from "react-icons/fa";
+import { FaStar, FaHeartBroken, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 
 export default function Reviews(props) {
   const { gameID } = useParams();
-  const reviews = props.reviews;
+  const [reviews, setReviews] = useState([])
+  const [reviewsLoading, setReviewsLoading] = useState(true)
 
   useEffect(() => {
     props.setIntro(`${props.selected} - Reviews`);
@@ -15,23 +16,23 @@ export default function Reviews(props) {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        props.setLoading(true);
+        setReviewsLoading(true);
         const response = await api.get(`/reviews/game/${gameID}`);
-        props.setReviews(response.data);
+        setReviews(response.data);
       } catch (error) {
         alert(
           error?.response?.data?.error ??
             `Failed: ${error?.response?.status ?? error.message}`
         );
       } finally {
-        props.handleLoading();
+        setReviewsLoading(false);
       }
     };
 
     fetchReviews();
   }, [gameID]);
 
-  if (props.loading) {
+  if (reviewsLoading) {
     return <Loader />;
   }
 
@@ -59,15 +60,24 @@ export default function Reviews(props) {
         reviews.map((review) => (
           <div className="review-row" key={review._id}>
             <div className="review-header">
-              <span id="user">{review.username}</span>
+              <Link id="user" style = {{textDecoration: 'none'}}to = {`/mygaminglist/profile/${review.username}`}>{review.username}</Link>
+              {/* <Link id = 'profile-name' to = {`/mygaminglist/profile/${user.username}`}>{user.username}</Link> */}
               <span id="review-rating">
-                <FaStar className="rating-star" />
-                {review.rating}
+                {[1, 2, 3, 4, 5].map((star) => {
+                  const rating = Number(review.rating);
+                  if (rating >= star) {
+                    return (<FaStar key={star} style={{ color: "hsl(0, 96%, 29%)" }}/>)
+                  }
+                  if (rating >= star - 0.5) {
+                    return (<FaStarHalfAlt key={star} style={{ color: "hsl(0, 96%, 29%)" }}/>)
+                  }
+                  return (<FaRegStar key={star} style={{ color: "hsl(0, 96%, 29%)" }}/>)
+                })}
               </span>
             </div>
 
             <div id={review._id} className="review-content">
-              <p className="review-game">
+              <p className="review-game" id = 'public-reviews-game'>
                 <u>{props.selected}</u>
               </p>
               {/* <p className="review-bold">Review</p> */}

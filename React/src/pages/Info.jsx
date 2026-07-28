@@ -3,100 +3,150 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import Loader from '../components/Loader';
+import StarRatingInput from "../components/StarRating";
 import { api } from "../api/client";
-import { rawgScreenshotsUrl } from "../api/rawg";
+import { rawgGameUrl, rawgScreenshotsUrl } from "../api/rawg";
 
 
-import { FaPlus, FaCheck, FaPencilAlt, FaImage, FaStar, FaTimesCircle } from "react-icons/fa";
+import { FaPlus, FaCheck, FaPencilAlt, FaImage, FaStar, FaTimesCircle, FaHeart, FaRegHeart, FaHeartBroken } from "react-icons/fa";
 
 export default function Info (props) {
   let {gameID} = useParams()
   const { user, isLoggedIn, login, logout } = useAuth();
+  const [game, setGame] = useState(null)
+  const [screenshots, setScreenshots] = useState([])
+  const [edit, setEdit] = useState(false)
   const [loading, setLoading] = useState(true)
   const [show, setShow] = useState(false)
   const [added, setAdded] = useState(false)
+  const [favorite, setFavorite] = useState(false)
   const [rendered, setRendered] = useState(false)
   const [ssindex, setssindex] = useState(1)
   const [data, setData] = useState([])
+  const [listEntry, setListEntry] = useState(null)
   const [updated, setUpdated] = useState('completed')
+  const [rating, setRating] = useState('')
+  const [favoriteAnim, setFavoriteAnim] = useState(false)
+  const [deals, setDeals] = useState([])
+  const [dealGame, setDealGame] = useState(null)
+  const [dealsLoading, setDealsLoading] = useState(false) 
   const navigate = useNavigate()
   const genScreenshots = (gameID) => rawgScreenshotsUrl(gameID)
   const checkForEntry = (gameID) => api.get(`/list/${gameID}`)
 
 
-  useEffect(()=> {
-    props.setIntro(`${props.selected} - Info and Details`)
-  })
-
   useEffect(() => {
-    if(!rendered && gameID){
     const fetch = async() => {
-      if (isLoggedIn){
-          const check = await checkForEntry(gameID)
-          console.log(check.data)
-        if(check.data.length !== 0){
-          console.log('doin it')
-          setAdded(true)
-        }
-        else{
-          setAdded(false)
-        }
-    }
       try{
-        const response = await axios.get(`${props.genInfo(gameID)}`)
-        const images = await axios.get(`${genScreenshots(gameID)}`)
-        props.updateSearchResults(response.data)
-        props.setScreenshots(images.data.results)
-        console.log(props.screenshots)
+        setLoading(true)
+        const response = await axios.get(rawgGameUrl(gameID))
+        const images = await axios.get(rawgScreenshotsUrl(gameID))
+        setGame(response.data)
+        setScreenshots(images.data.results  ?? [])
+        if (isLoggedIn){
+          const check = await checkForEntry(gameID)
+          if(check.data.length !== 0){
+            setAdded(true)
+            setListEntry(check.data[0])
+            setFavorite(check.data[0].favorite === true)
+          }
+          else{
+            setAdded(false)
+            setListEntry(null);
+            setFavorite(false)
+        }
+        }
     } catch(error) {
-      alert('error')
+      console.error('error')
     } finally {
       setLoading(false)
     }
     }
-    fetch()
-  }
-  else{
-    setRendered(false)
-  }
+    if (gameID){
+      fetch()
+    }
+  }, [gameID, isLoggedIn])
 
-  }, [gameID])
+  useEffect(() => {
+    async function getDeals() {
+      if (!game?.name) return
 
+      try {
+        setDealsLoading(true)
 
-  const results = props.searchResults
+        const response = await api.get("/deals/cheapshark/search", {
+          params: {
+            title: game.name
+          }
+        });
+        setDealGame(response.data.game)
+        setDeals(response.data.deals)
+      } catch (error) {
+        console.error("Could not load CheapShark deals:", error)
+        setDeals([])
+      } finally {
+        setDealsLoading(false);
+      }
+    }
 
-   const saveToList = async(status, data) => {
-    // const url = "http://localhost:8000/api/v1/list/new"
+    getDeals()
+}, [game?.name])
 
-    // const fetch = async() => {
-    //   try{
-    //     const response = await axios.post(url, {gameId: data.id, user: 'user', status: status, name: data.name, card: data.background_image })
-    //     window.location.reload()
-    //   }
-    //   catch(error){
-    //     alert(error)
-    //   }
-    // }
-    // fetch()
+  useEffect(()=> {
+    if(game) {
+    props.setIntro(`${game.name} - Info and Details`)
+    }
+  }, [game, props.setIntro])
+
+  const results = game
+
+  const saveToList = async(status, gameRating) => {
+    if (status === 'completed' && (gameRating === "" || gameRating == 'Select' )) {
+      alert("Please select a rating.");
+      return;
+    }
     try{
-      await api.post('/list/new', {
+      const response = await api.post('/list/new', {
         gameId: gameID,
         userId: "dev-user-123", // temporary bridge until auth
         status,
         name: results.name,
+        rating:  status === "completed" ? gameRating : null,
         card: results.background_image,
       })
       setShow(false)
-      setShow(false);
-      setTimeout(() => props.setEdit(false), 200);
+      setListEntry(response.data.entry)
+      console.log('RESPONSEE', listEntry)
+      setTimeout(() => setEdit(false), 200);
       setAdded(true);
-      // setClose(true);
+      // const check = await checkForEntry(gameID);
+      // setListEntry(check.data[0]);
+      // setFavorite(check.data[0].favorite === true)
     }
     catch (error){
       alert(error)
     }
   }
 
+  const saveToFavorites = async() => {
+    if (!listEntry) {
+      alert("Add this game to your list before favoriting it.")
+      return
+    }
+    const favoriteValue = !listEntry.favorite
+    try{
+      await api.put(`/list/${listEntry._id}`, {
+        favorite: favoriteValue,
+      })
+      setFavorite(favoriteValue);
+      setListEntry({ ...listEntry, favorite: favoriteValue })
+      triggerFavoriteAnimation()
+      // setClose(true);
+    }
+    catch (error){
+      alert(error)
+    }
+  }
 
   const genres = (game) => {
     const genreNames = []
@@ -137,20 +187,41 @@ export default function Info (props) {
       return platformNames
     }
   }
- 
+ const triggerFavoriteAnimation = () => {
+    setFavoriteAnim(false)
+
+    requestAnimationFrame(() => {
+      setFavoriteAnim(true)
+    })
+
+    setTimeout(() => {
+      setFavoriteAnim(false);
+    }, 300)
+  }
   const repl = (descr) => {
     let newText = descr.replace(/###/g, '\n')
     return newText
   }
 
   const displayEdit=(thing)=> {
-    props.setEdit(true)
-    setShow(true)
     setData(thing)
+    setUpdated(thing.status)
+    setRating(thing.rating ?? '')
+    setEdit(true)
+    setShow(true)
   }
 
   const changeSelected = (event) => {
     setUpdated(event)
+    console.log('updated', updated)
+
+    if (event !== "completed") {
+      setRating("")
+    }
+  }
+
+  const changeRating = (event) => {
+    setRating(event)
     // setChanged(true)
   }
 
@@ -167,6 +238,7 @@ export default function Info (props) {
     navigate(`/mygaminglist/game/${game.id}/images`)
   }
 
+
   if (loading){
     return (
       <Loader/>
@@ -175,97 +247,162 @@ export default function Info (props) {
 
 
   if (results){
-  return(
-    <div className='main-container'>
-      <div id = "center">
-        <div className='img-container'>
-          {/* <div className='game-info'><b>Information</b></div> */}
-          <img id = "background-cover" className='thumbnail' src = {results.background_image}></img>
-          {props.screenshots &&
-          <span className='misc-images'>
-            <img src = {props.screenshots[0].image} onClick={() => {navSS(results)}}></img>
-            {props.screenshots[1] &&<img src = {props.screenshots[1].image} onClick={() => {navSS(results)}}></img>}
-            {props.screenshots[2] &&<img src = {props.screenshots[2].image} onClick={() => {navSS(results)}}></img>}
-            <FaImage size = {40} className='icon-overlay' onClick={() => {navSS(results)}}/>
-          </span>
-          }
-        </div>
-        <div className='details'>
-            <div className='details-container'>
-              <div id = "game-genres">
-                <span id = "genre-title"><b>Genres: </b>{genres(results)} </span>
-              </div>
-              <div id = "release-date">
-                <span id = "release-title"><b>Release Date: </b>{results.released}</span>
-              </div>
-              <div id = "publisher">
-                <span id = 'publisher-title'><b>Publisher(s): </b>{publishers(results)}</span>
-              </div>
-              <div id = "esrb">
-                <span id = 'esrb-title'><b>ESRB Rating: </b>{results.esrb_rating?.name || "No Rating Listed"}</span>
-              </div>
-              <div id = "platfrms">
-                <span id = 'platfrm-ttle'><b>Platforms: </b>{platforms(results)}</span>
-              </div>
-              <div id = "butt-cont">
-                {isLoggedIn ? (
-                <>
-                {!added
-                ?<button id = "list-add" className='game-buttons' onClick={()=>{displayEdit(results)}}><FaPlus className='plusicon'/>Add to List</button>
-                :<button id = "list-added" className='game-buttons'><FaCheck className='plusicon'/>Added to List</button>}
-                <button id = "review-add" className='game-buttons' onClick={()=>{navReview(results)}}><FaPencilAlt className='pencicon'/>Write a Review</button>
-                </>
-                ) : (
-                  <button id="login-required" className="game-buttons" onClick={() => navigate("/mygaminglist/login")}>Login to use these features</button>
-                )}
-              </div>
-              <div className={`entry-backdrop ${show? 'scale-in-center' : 'scale-out-center'}`} style={{display: props.edit && 'block'}}>
-                  <div className='edit-entry'>
-                    <p className='edit-title-text'>Add to List?</p>
-                    <div className='list-info'>
-                      <div className='list-game'>
-                        <p className='list-p' >Game Title:</p>
-                        <p className = "list-game-title">{data.name}</p>
-                      </div>
-                      <div className='list-details'>
-                        <p className='list-p'>Status:</p>
-                        <select className='edit-status' onChange={(event) => {changeSelected(event.target.value)}}>
-                          <option selected = {data.status} disabled>--Status--</option>
-                          <option value = 'completed'>completed</option>
-                          <option value = 'playing'>playing</option>
-                          <option value = 'plan to play'>plan to play</option>
-                          <option value = 'dropped'>dropped</option>
-                        </select>
-                      </div>
-                      <button className='list-save' onClick={()=> saveToList(updated)}><FaPlus className='plusicon' id = 'add-lis-cat'/></button>
-                      {/* <button className='list-save'>...</button> */}
+    return(
+      <div className='main-container'>
+        <div id = "center">
+          <div className='img-container'>
+            {/* <div className='game-info'><b>Information</b></div> */}
+            <img id = "background-cover" className='thumbnail' src = {results.background_image}></img>
+            {screenshots.length > 1 ? (
+            <span className='misc-images'>
+              <img src = {screenshots[0].image} onClick={() => {navSS(results)}}></img>
+              {screenshots[1] &&<img src = {screenshots[1].image} onClick={() => {navSS(results)}}></img>}
+              {screenshots[2] &&<img src = {screenshots[2].image} onClick={() => {navSS(results)}}></img>}
+              <FaImage size = {40} className='icon-overlay' onClick={() => {navSS(results)}}/>
+            </span>) : 
+            (<div className="misc-images" onClick={() => {navSS(results)}} 
+            style={{color: 'hsl(0, 96%, 29%)', display: 'flex', flexDirection: 'column', cursor: 'pointer'}}>
+              <FaHeartBroken className="misc-images" style={{margin: '10px auto'}}/> 
+              <h4 style={{margin: '0 auto'}}>Images not Available..</h4>
+            </div>)
+
+            }
+          </div>
+          <div className='details'>
+              <div className='details-container'>
+                <div id = "game-genres">
+                  <span id = "genre-title"><b>Genres: </b>{genres(results)} </span>
+                </div>
+                <div id = "release-date">
+                  <span id = "release-title"><b>Release Date: </b>{results.released}</span>
+                </div>
+                <div id = "publisher">
+                  <span id = 'publisher-title'><b>Publisher(s): </b>{publishers(results)}</span>
+                </div>
+                <div id = "esrb">
+                  <span id = 'esrb-title'><b>ESRB Rating: </b>{results.esrb_rating?.name || "No Rating Listed"}</span>
+                </div>
+                <div id = "platfrms">
+                  <span id = 'platfrm-ttle'><b>Platforms: </b>{platforms(results)}</span>
+                </div>
+                <div id = "butt-cont">
+                  {isLoggedIn ? (
+                  <>
+                  {!added
+                  ?<button id = "list-add" className='game-buttons' onClick={()=>{displayEdit(results)}}><FaPlus className='plusicon' style={{marginRight: '5px'}}/>Add to List</button>
+                  :<button id = "list-added" className='game-buttons'><FaCheck style={{marginRight: '5px'}}/>Added to List</button>}
+                  <button id = "review-add" className='game-buttons' onClick={()=>{navReview(results)}}><FaPencilAlt style={{marginRight: '5px'}}/>Write a Review</button>
+                  {/* {!favorite ?<button className='game-buttons' style = {{backgroundColor: 'white'}}onClick={()=> {saveToFavorites()}}><FaRegHeart
+                  style={{margin: '0 auto', color: 'hsl(0, 96%, 29%)', fontSize: '20px'}}></FaRegHeart></button>
+                  :<button className='game-buttons' style={{backgroundColor: 'white', color: 'hsl(0, 96%, 29%)'}}><FaHeart 
+                  style={{margin: '0 auto', color: 'hsl(0, 96%, 29%)', fontSize: '20px'}} onClick={()=> {saveToFavorites()} }></FaHeart></button>} */}
+                  <button className="game-buttons" style={{ backgroundColor: "white" }} onClick={saveToFavorites}>
+                    <div className={`favorite-wrapper ${favoriteAnim ? "favorite-active" : ""}`}>
+                      {favorite ? (<FaHeart style={{color: "hsl(0, 96%, 29%)", fontSize: "20px",}}/>) : 
+                      (<FaRegHeart style={{color: "hsl(0, 96%, 29%)", fontSize: "20px",}}/>)}
+                        <span className="pixel pixel1"></span>
+                        <span className="pixel pixel2"></span>
+                        <span className="pixel pixel3"></span>
+                        <span className="pixel pixel4"></span>
                     </div>
-                  </div>
-                    <FaTimesCircle className='exit-list' onClick={()=> {setShow(false); setTimeout(()=> {props.setEdit(false)}, 500)}}/>
+                  </button>
+                  {/* <button className='game-buttons'></button> */}
+                  </>
+                  ) : (
+                    <button id="login-required" className="game-buttons" onClick={() => navigate("/mygaminglist/login")}>Login to use these features</button>
+                  )}
+                </div>
+                <div className={`entry-backdrop ${show? 'scale-in-center' : 'scale-out-center'}`} style={{display: edit ? 'block' : 'none'}}>
+                    <div className='edit-entry'>
+                      <p className='edit-title-text'>Add to List?</p>
+                      <div className='list-info'>
+                        <div className='list-game'>
+                          <p className='list-p' >Game Title:</p>
+                          <p className = "list-game-title">{data.name}</p>
+                        </div>
+                        <div className='list-details'>
+                          <p className='list-p'>Status:</p>
+                          <div className="edit-status" style={{letterSpacing: 'normal'}}>
+                            <div style= {{backgroundColor: updated === 'completed' ? 'hsl(0, 96%, 29%)' : 'white', color: updated === 'completed' 
+                              ? 'white': 'hsl(0, 96%, 29%)', margin: 'auto 0 0 auto' }} value = 'completed' onClick={(event) => changeSelected('completed')}>completed</div>
+                            <div style= {{backgroundColor: updated === 'playing' ? 'hsl(0, 96%, 29%)' : 'white', color: updated === 'playing' 
+                              ? 'white': 'hsl(0, 96%, 29%)', margin: 'auto 0 0 auto'}} value = 'playing' onClick={(event) => changeSelected('playing')}>playing</div>
+                            <div style= {{backgroundColor: updated === 'plan to play' ? 'hsl(0, 96%, 29%)' : 'white', color: updated === 'plan to play' 
+                              ? 'white': 'hsl(0, 96%, 29%)', margin: 'auto 0 0 auto'}} value = 'plan to play' onClick={(event) => changeSelected('plan to play' )}>plan to play</div>
+                            <div style= {{backgroundColor: updated === 'dropped' ? 'hsl(0, 96%, 29%)' : 'white', color: updated === 'dropped' 
+                              ? 'white': 'hsl(0, 96%, 29%)', margin: 'auto 0 0 auto'}} value = 'dropped' onClick={(event) => changeSelected('dropped')}>dropped</div>
+                          </div>
+                        </div>
+                        {updated === 'completed' && (
+                        <div className = 'list-rating'>
+                          <p>Rating:</p>
+                          <StarRatingInput list = {true} rating = {rating} setRating = {setRating}></StarRatingInput>
+                        </div>)}
+                        <button className='list-save' onClick={()=> saveToList(updated, rating)}><FaPlus className='plusicon' id = 'add-lis-cat'/></button>
+                        {/* <button className='list-save'>...</button> */}
+                      </div>
+                    </div>
+                      <FaTimesCircle className='exit-list' onClick={()=> {setShow(false); setTimeout(()=> {setEdit(false)}, 500)}}/>
+                </div>
+              
               </div>
-            
-            </div>
-        </div>
-      </div>
-      <div id = "info-container">
-        <div id='info-stick'>
-          <div id = "info-title"><b>{results.name}</b></div>
-          <div id = "under-header">
-            <span className='info-rating-cont'>
-              <FaStar id = "game-rating"/>
-                <span id = "rating-text">{results.rating}/5</span>
-            </span>
-            <span id = "game-developer">
-              <span id = "dev-title">Developer: </span>
-              {results.developers?.[0]?.name || "Unknown Developer"}
-            </span>
           </div>
         </div>
-        <div id = "descr-title"> 
-        {repl(results.description_raw)}</div>
+        <div id = "info-container">
+          <div id='info-stick'>
+            <div id = "info-title">{results.name}</div>
+            <div id = "under-header">
+              <span className='info-rating-cont'>
+                <FaStar id = "game-rating"/>
+                  <span id = "rating-text">{results.rating}/5</span>
+              </span>
+              <span id = "game-developer">
+                <span id = "dev-title">Developer: </span>
+                {results.developers?.[0]?.name || "Unknown Developer"}
+              </span>
+            </div>
+          </div>
+          <div id = "descr-title"> 
+            {repl(results.description_raw)}
+          </div>
+          <div className="game-deals">
+            <div className="deals-header">
+              <p className="deals-title">Deals</p>
+              {dealsLoading && <p>Loading prices...</p>}
+              {dealGame?.cheapestPriceEver && (
+                <p id = 'deals-lowest'>
+                  Lowest recorded price: 
+                  <strong style={{fontFamily: 'Cambria', fontSize: '15px'}}>  ${dealGame.cheapestPriceEver}</strong>
+                </p>
+              )}
+            </div>
+            <div className="deals-container">
+              {deals.filter((deal) => Number(deal.price) < Number(deal.retailPrice)).map ((deal) =>(
+                  <div key={deal.dealID} className="deal-result">
+                    <p className="deal-header"><u>{deal.storeName}</u></p>
+                    <div className="deal-price-cont">
+                      <div >
+                        <u>Deal</u>
+                        <p style={{margin: '0', fontFamily: 'Cambria'}}>${deal.price}</p>
+                      </div>
+                      <p style={{color: 'hsl(0, 96%, 29%)'}}>{deal.savings}% off</p>
+                      <div >
+                        <u>Retail</u>
+                        <p className="retail-price" style={{margin: '0', fontFamily: 'Cambria'}}>${deal.retailPrice}</p>
+                      </div>
+                    </div>
+                    <a href={deal.dealURL} target="_blank" rel="noreferrer" className = 'deal-link' 
+                    style={{marginBottom: '25px'}}>View Deal</a>
+                  </div>
+              ))}
+              {!dealsLoading && deals.length === 0 && (
+                <p style={{textAlign: 'center'}}>No Deals found <FaHeartBroken style={{color: 'hsl(0, 96%, 29%)'}}/></p>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className='opac-wrap' style={{display: edit ? 'block' : 'none'}}></div>
       </div>
-      <div className='opac-wrap' style={{display: props.edit && 'block'}}></div>
-    </div>
-  )
+    )
+    }
   }
-}

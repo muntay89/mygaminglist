@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import Loader from '../components/Loader';
 import { useAuth } from "../context/AuthContext";
-import { useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 
 
@@ -40,14 +40,15 @@ export const Login = () => {
             const back = location.state?.from ?? '/mygaminglist/'
             navigate(back, {replace: true})
         }catch(error){
-            setError('Login failed. Please try again')
+            setError(error.response?.data?.error || "Login failed.")
         }finally{
             setSubmitting(false)
         }
     }
     if (loading) {
-    return
-        <Loader />
+        return(
+             <Loader />
+            )
     }
     return(
         <div className='auth-container'>
@@ -55,18 +56,20 @@ export const Login = () => {
                 <h2 class = 'auth-banner'>Login</h2>
                 <div class = 'auth-username'>
                     <span className = "form-names">Username</span>
-                    <input className = "forms" type = "text" value ={username} 
-                    onChange={(e) => setUsername(e.target.value)} autoComplete='username'/>
+                    <input className = "forms" name = 'username' type = "text" value ={username} 
+                    onChange={(e) => setUsername(e.target.value)} autoComplete='username' required minLength={3} maxLength={24}/>
                 </div>
                 <div class = 'auth-passw'>
                     <span className = "form-names">Password</span>
                     <span className = "show-p">Show password</span>
                     <input type = "checkbox" id = "show-p-box" checked ={showPass}
                     onChange={(e) => setShowPass(e.target.checked)}/>
-                    <input className = "forms" type = {showPass ? "text" : "password"} id = "passW" value = {password}
+                    <input className = "forms" name = 'password' type = {showPass ? "text" : "password"} id = "passW" value = {password}
                     onChange={(e) => setPassword(e.target.value)} autoComplete='current-password'/>
+                    {error && <p className="auth-error">{error}</p>}
                 </div>
                 <button id = "form-login" type="submit" disabled={submitting}><b>Login</b></button>
+                <Link to="/mygaminglist/signup" className = 'login-signup'>Sign up?</Link>
             </form>
         </div>
     )

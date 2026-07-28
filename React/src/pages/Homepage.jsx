@@ -107,28 +107,6 @@ export default function Homepage ({reset, setReset, setIntro}){
             />
           ))}
         </div>
-          {/* <Swiper
-            slidesPerView={3}
-            slidesPerGroup={1}
-            centeredSlides={true}
-            loop={true}
-            spaceBetween={20}
-            watchOverflow={false}
-            loopAdditionalSlides={4}
-            navigation={true}
-            pagination={{ clickable: true }}
-            modules={[Pagination, Navigation]}
-            className="homepage-swiper"
-          >
-            {displayFeatures.map((feature, index) => (
-      <SwiperSlide className="homepage-feature" key={`${feature.title}-${index}`}>
-        <p className='feature-text'>
-          {feature.title} {feature.icon}
-        </p>
-        <p className='feature-side'>{feature.text}</p>
-      </SwiperSlide>
-    ))}
-          </Swiper> */}
         <div className="mountains"></div>
         <div className="firelight"></div>
         <div className="vignette"></div>

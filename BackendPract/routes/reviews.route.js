@@ -5,7 +5,8 @@ import { requireAuth } from '../middleware/requireAuth.js'
 const router = express.Router()
 
 router.route("/game/:id").get(ReviewsController.apiGetReviews)
-router.route("/my/game/:id").get(ReviewsController.apiGetReviewsByUser)
+router.route("/my/game/").get(requireAuth, ReviewsController.apiGetReviewsByUser)
+router.route("/my/game/:id").get(requireAuth, ReviewsController.apiGetReviewsByGameAndUser)
 router.route("/new").post(requireAuth, ReviewsController.apiPostReview)
 router.route("/:id")
     .get(ReviewsController.apiGetReview)

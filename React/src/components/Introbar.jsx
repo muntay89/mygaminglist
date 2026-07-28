@@ -7,9 +7,6 @@ export default function Introbar(props){
   const path = window.location.pathname
   const [route, setRoute] = useState('')
   const [intro, setIntro] = useState('')
-  console.log('path', path)
-
-  console.log('id', gameID)
   
   return(
     <div className="introbar">

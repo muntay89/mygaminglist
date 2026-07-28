@@ -16,10 +16,11 @@ export default class ReviewsDAO {
     }
   }
 
-  static async addReview(gameId, userId, username, review, rating) {
+  static async addReview(gameId, gameTitle, userId, username, review, rating) {
     try {
       const reviewDoc = {
         gameId: gameId,
+        gameTitle: gameTitle,
         userId: new ObjectId(userId),
         username: username,
         review: review,
@@ -74,6 +75,16 @@ export default class ReviewsDAO {
   static async getReviewsBygameId( gameId) {
     try {
       const cursor = await reviews.find({gameId: parseInt(gameId) })
+      return cursor.toArray()
+    } catch (e) {
+      console.error(`Unable to get review: ${e}`)
+      return { error: e }
+    }
+  }
+
+  static async getReviewsByUser( userId) {
+    try {
+      const cursor = await reviews.find({userId: new ObjectId(userId)})
       return cursor.toArray()
     } catch (e) {
       console.error(`Unable to get review: ${e}`)

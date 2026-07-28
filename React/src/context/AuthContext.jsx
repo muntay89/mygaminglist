@@ -28,7 +28,7 @@ export function AuthProvider ({ children }) {
     const res = await api.post("/auth/login", { username, password });
     setUser(res.data.user);
     setIsLoggedIn(true);
-    // return res.data.user;
+    
   }
   async function signup(username, password) {
     const res = await api.post("/auth/signup", {username, password})

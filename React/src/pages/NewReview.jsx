@@ -1,17 +1,15 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate} from "react-router-dom";
 import { FaStar } from "react-icons/fa";
 import { api } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import StarRatingInput from "../components/StarRating";
 
 export default function Newreview (props) {
   const { user, isLoggedIn, login, logout } = useAuth();
-  const results = props.searchResults
   const navigate = useNavigate()
-  // const newreview = document.getElementById('new_review')
-  // const user = document.getElementById('user')
-  // const [reviewgameID, setReviewID] = useState(1)
-  // const ratingOptions = document.getElementById('rating-options')
+  const [reviewText, setReviewText] = useState('')
+  const [rating, setRating] = useState('5')
   let {gameID} = useParams()
   useEffect(()=> {
     props.setIntro(`${props.selected} - New Review`)
@@ -19,31 +17,27 @@ export default function Newreview (props) {
 
 
   
-  const saveReviews = async(reviewInputId, newRating) => {
-    const review = document.getElementById(reviewInputId).value;
-    const rating = document.getElementById(newRating).value;
+  const saveReviews = async() => {
 
-    console.log(JSON.stringify(review), JSON.stringify(rating), parseFloat(gameID))
-
-      if(rating !== 'Select'){
-      try{
-        await api.post(`/reviews/new`, { review, gameId: gameID, rating })
-        navigate(`/mygaminglist/reviews/${gameID}`);
-        // console.log(response)
-      }
-      catch(error){
-        alert(error)
-      }
-      // finally{
-      //   location.reload()
-      // }
+      if(rating !== 'Select' && reviewText !== '' || null){
+        try{
+          await api.post(`/reviews/new`, { review: reviewText.trim(), gameId: gameID, gameTitle: props.selected, rating: Number(rating) })
+          navigate(`/mygaminglist/reviews/${gameID}`);
+          // console.log(response)
+        }
+        catch(error){
+          alert(error)
+        }
+        // finally{
+        //   location.reload()
+        // }
     }
     else{
-      alert('Please select a rating!')
+      alert('Review cannot be empty')
     }
   }
 
-  if(results){
+  
   return(
     <div className='review-background'>
       <ul className='list-categories' id = 'review-categories'>
@@ -56,23 +50,16 @@ export default function Newreview (props) {
       <div id = 'new_review_id'>
         <div id = "review-content">
           <p className='review-game'><u>{props.selected}</u></p>
-          <select className="review-select" id = "rating-options">
-          <FaStar className='rating-star'/>
-            <option selected ="selected" value = "Select" disabled>--Select a Rating--</option>
-            <option value = "5">5</option>
-            <option value = "4">4</option>
-            <option value = "3">3</option>
-            <option value = "2">2</option>
-            <option value = "1">1</option>
-          </select>
           <p className='review-bold'>Review</p>
-          <textarea id = "new_review" className='edit-input'></textarea>
-          <div className='save-cont'>
-            <a id = "save-button" onClick={() => saveReviews("new_review", "rating-options")}>Save</a>
+          <textarea id = "new_review" className='edit-input' value = {reviewText} onChange={(e) => setReviewText(e.target.value)}></textarea>
+          <div className="review-final">
+            <StarRatingInput rating = {rating} setRating = {setRating}></StarRatingInput>
+            <div className='save-cont'>
+              <a id = "save-button" onClick={() => saveReviews()}>Publish</a>
+            </div>
           </div>
         </div>
       </div>
     </div>
   )
-  }
 }

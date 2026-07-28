@@ -14,14 +14,16 @@ export default class ListDAO {
       }
     }
 
-    static async addList(gameId, user, status, name, card) {
+    static async addList(gameId, user, status, name, rating, card, favorite = false) {
         try {
         const listDoc = {
             gameId: gameId,
             user: user,
             status: status,
             name: name,
+            rating: rating, 
             card: card,
+            favorite: favorite,
         }
         console.log("adding")
         return await list.insertOne(listDoc)
@@ -43,12 +45,17 @@ export default class ListDAO {
 
 
     
-      static async updateList(listId, user, status, name) {
+      static async updateList(listId, user, status, name, rating, favorite) {
         const objectId = new ObjectId(listId)
         try {
+          const updateFields = {};
+          if (status !== undefined) updateFields.status = status;
+          if (name !== undefined) updateFields.name = name;
+          if (rating !== undefined) updateFields.rating = rating;
+          if (favorite !== undefined) updateFields.favorite = favorite;
           const updateResponse = await list.updateOne(
             { _id: objectId, user: user },
-            { $set: {  status: status, name: name,  } }
+            { $set: updateFields }
           )
     
           return updateResponse
@@ -99,6 +106,38 @@ export default class ListDAO {
           return cursor.toArray()
         } catch(e) {
           console.error(`Unable to get review: ${e}`)
+          return {error: e}
+        }
+      }
+
+      static async getFavorites(userId){
+        try{
+          const cursor = await list.find({user: userId, favorite: true})
+          return cursor.toArray()
+        } catch(e) {
+          console.error(`Unable to get favorites: ${e}`);
+          return { error: e };
+        }
+      }
+
+      static async getProfileStats(userId){
+        try{
+          return await list.aggregate([
+           {
+            $match: {
+              user: userId
+            } 
+           }, 
+           {
+            $group: {
+              _id: '$status',
+              count: {
+                $sum: 1
+              }
+            }
+           }
+          ]).toArray()
+        } catch (e) {
           return {error: e}
         }
       }
