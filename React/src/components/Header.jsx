@@ -1,5 +1,5 @@
 import { Link, useNavigate} from "react-router-dom";
-import { FaBars } from "react-icons/fa";
+import { FaBars, FaUser } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 
 export default function Header({ handleClick }) {
@@ -29,7 +29,8 @@ export default function Header({ handleClick }) {
               </Link>
             </>) : (
             <>
-            <Link id = 'profile-name' to = {`/mygaminglist/profile/${user.username}`}>{user.username}</Link>
+            <Link id = 'profile-name' to = {`/mygaminglist/profile/${user.username}`} style={{display: "flex", flexDirection: 'row'}}>
+              <FaUser style={{marginRight: '10px'}}></FaUser>{user.username}</Link>
             <Link to = "/mygaminglist/list" id = "list"><FaBars className='list-icon'/></Link>
             <button
               className="headerbutt"

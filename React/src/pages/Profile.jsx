@@ -1,15 +1,19 @@
 import { useEffect, useState} from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Loader from '../components/Loader';
+import ListStatusChart from "../components/PieChart";
+import RatingDistributionChart from "../components/BarChart";
 import { api } from "../api/client";
 
 export default function Profile (props) {
     const { user, isLoggedIn, login, logout } = useAuth();
     let {username} = useParams()
     const [profile, setProfile] = useState(null)
-
+    const [listLoading, setListLoading] = useState(true)
+    const [list, setList] = useState([])
+    const navigate = useNavigate()
 
     useEffect(() => {
         api.get(`/profiles/${username}/profile`)
@@ -22,13 +26,31 @@ export default function Profile (props) {
         })
     }, [username])
 
-        // }, [username]);
+    useEffect(() => {
+        const fetch = async() => {
+        try{
+            setListLoading(true)
+            // console.log(props.myAPI(gameID))
+            const response = await api.get(`/list/game/${username}`);
+            console.log('list', response.data)
+            setList(response.data)
+        }catch(error){
+            alert(error)
+            setListLoading(false)
+        }finally{
+            setListLoading(false)
+            // setTest(false)
+        }
+        }
+        fetch()
+  }, [profile])
 
     if (!profile) {
     return <Loader></Loader>
     }
     
     return (
+        <>
         <div className = 'profile-content'>
             <div class = 'profile-container'>
                 <h1 className = 'profile-user'>{profile.username}</h1>
@@ -76,6 +98,11 @@ export default function Profile (props) {
                     <p style={{fontFamily: 'Cambria'}}>{profile.total}</p>
                 </div>
             </div>
+            <div className="profile-charts">
+                <RatingDistributionChart className = 'profile-bar' games={list} onRatingSelect={(rating) => {setSelectedRating(rating)}}/>
+                <ListStatusChart className = 'profile-pie' stats = {profile.stats} onStatusSelect = {(status) => 
+                {navigate(`/mygaminglist/list?status=${encodeURIComponent(status)}`)}}></ListStatusChart>
+            </div>
             {/* {profile.favorites.map(game => (
             <Link key={game.gameId} to={`/mygaminglist/game/${game.gameId}`}>
                 <img src={game.card} />
@@ -84,5 +111,6 @@ export default function Profile (props) {
             ))}
             <p>{profile.joined}</p> */}
         </div>
+        </>
     )
 }
