@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
 import { Swiper, SwiperSlide } from "swiper/react";
+import { api } from "../api/client";
 import "swiper/css";
 import "swiper/css/effect-coverflow";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
 import { EffectCoverflow, Pagination, Navigation } from "swiper/modules";
-import { rawgScreenshotsUrl } from "../api/rawg";
 import Loader from "../components/Loader";
 import { FaArrowLeft, FaArrowRight, FaTimesCircle, FaHeartBroken } from "react-icons/fa";
 
@@ -22,7 +21,7 @@ export default function Images (props) {
   useEffect( () => {
     const fetch = async() => {
       try{
-        const response = await axios.get(rawgScreenshotsUrl(gameID))
+        const response = await api.get(`/igdb/games/${gameID}/screenshots`)
         setScreenshots(response.data.results ?? [])
       }
       catch(error){

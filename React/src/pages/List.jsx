@@ -60,10 +60,6 @@ export default function List (props) {
       alert("Please select a rating.")
       return
     }
-    if (updated === entry.status){
-      alert('Status cannot be the same!')
-      return
-    }
     try {
       await api.put(`/list/${data._id}`, {
         listId: data._id,

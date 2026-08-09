@@ -6,6 +6,8 @@ import list from "./routes/list.route.js"
 import profiles from './routes/profiles.route.js'
 import router from "./routes/auth.route.js"
 import deals from './routes/deals.route.js'
+import rawgRouter from './routes/rawg.route.js'
+import igdbRouter from './routes/igdb.route.js'
 import MongoStore from "connect-mongo"
 
 const app = express()
@@ -61,6 +63,8 @@ app.use("/api/v1/reviews", reviews)
 app.use("/api/v1/list", list)
 app.use("/api/v1/profiles", profiles)
 app.use("/api/v1/deals", deals)
+app.use("/api/v1/rawg", rawgRouter)
+app.use("/api/v1/igdb", igdbRouter)
 app.use("", (req, res) => 
 res.status(404).json({error: "not found"}))
 

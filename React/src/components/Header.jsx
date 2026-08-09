@@ -2,7 +2,7 @@ import { Link, useNavigate} from "react-router-dom";
 import { FaBars, FaUser } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 
-export default function Header({ handleClick }) {
+export default function Header(props) {
   const { user, isLoggedIn, logout, loading } = useAuth()
   const navigate = useNavigate()
   const handleLogout = async () => {
@@ -10,9 +10,7 @@ export default function Header({ handleClick }) {
     navigate("/mygaminglist/login");
   }
 
-  const goProfile = () => {
-    navigate(`/mygaminglist/profile/${user.username}`)
-  }
+  
   return(
     <span className="top">
         <h2 className="title">

@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios";
 import Loader from '../components/Loader';
 import StarRatingInput from "../components/StarRating";
 import { api } from "../api/client";
-import { rawgGameUrl, rawgScreenshotsUrl } from "../api/rawg";
 
 
 import { FaPlus, FaCheck, FaPencilAlt, FaImage, FaStar, FaTimesCircle, FaHeart, FaRegHeart, FaHeartBroken } from "react-icons/fa";
@@ -31,7 +29,6 @@ export default function Info (props) {
   const [dealGame, setDealGame] = useState(null)
   const [dealsLoading, setDealsLoading] = useState(false) 
   const navigate = useNavigate()
-  const genScreenshots = (gameID) => rawgScreenshotsUrl(gameID)
   const checkForEntry = (gameID) => api.get(`/list/${gameID}`)
 
 
@@ -39,8 +36,8 @@ export default function Info (props) {
     const fetch = async() => {
       try{
         setLoading(true)
-        const response = await axios.get(rawgGameUrl(gameID))
-        const images = await axios.get(rawgScreenshotsUrl(gameID))
+        const response = await api.get(`/igdb/games/${gameID}`)
+        const images = await api.get(`/igdb/games/${gameID}/screenshots`)
         setGame(response.data)
         setScreenshots(images.data.results  ?? [])
         if (isLoggedIn){

@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
 import Loader from '../components/Loader';
 import StarRatingInput from "../components/StarRating";
 import { api } from "../api/client";
-import {RAWG_KEY, rawgGameUrl } from "../api/rawg";
 import { useAuth } from "../context/AuthContext";
 
 
@@ -26,7 +24,7 @@ export default function Games (props){
   const [rating, setRating] = useState('')
   const page = Math.max(1, Number.parseInt(number, 10) || 1)
   const checkForEntry = (gameID) => api.get(`/list/${gameID}`);
-  const generateAPI = (pageIndex, search, filter) => `https://api.rawg.io/api/games?key=${RAWG_KEY}&page=${pageIndex}&search=${search}${filter}`
+  const generateAPI = (pageIndex, search, filter) => `/igdb/games?page=${pageIndex}&search=${encodeURIComponent(search)}${filter}`
   const navigate = useNavigate()
   const results = searchResults?.results ?? []
 
@@ -39,7 +37,7 @@ export default function Games (props){
         try{
           setLoading(true)
           setHasFetched(false)
-          const response = await axios.get(generateAPI(page, props.search, props.filter))
+          const response = await api.get(generateAPI(page, props.search, props.filter))
           console.log(response.data.results)
           setSearchResults(response.data)
           setHasNext(Boolean(response.data.next))
@@ -76,6 +74,15 @@ export default function Games (props){
     }
   }
   
+  const textSlice = (text, limit) => {
+    const maxLimit = limit || 150;
+    const isTooLong = text.length > maxLimit;
+    const displayedText = isTooLong ? text.slice(0, maxLimit) + '...' : text;
+
+    return (
+      <p>{displayedText}</p>
+    )
+  }
   const changeSelected = (event) => {
     setUpdated(event)
     console.log('updated', updated)
@@ -186,20 +193,21 @@ export default function Games (props){
           <div className='row-main'>
             <div className='row-content'>
               <p className='title-card' onClick={()=> navInfo(element)}>
-                <u>{element.name}</u>
+                {element.name}
               </p>
                 <p className='platform-list'>
                   <u>Platforms</u>: {platforms(element)}
                 </p>
-            </div>
-              <div className='review-functions'>
-                <div className='rev-butt-cont'>
-                  <button id = "access-reviews" onClick={() => {navReviews(element)}} 
-                  className='access-rev-button'>Reviews</button>
-                  <button id = "access-my-reviews" onClick={() => {displayEdit(element)}} 
-                  className='access-rev-button'><FaPlus style={{ verticalAlign: "middle" }}/></button>
-                </div>
+                <p style={{fontFamily: 'VT323, monospace'}}>{textSlice(element.description_raw)}</p>
+                <div className='review-functions'>
+                  <div className='rev-butt-cont'>
+                    <button id = "access-reviews" onClick={() => {navReviews(element)}} 
+                    className='access-rev-button' style={{marginRight: 'auto'}}>Reviews</button>
+                    <button id = "access-my-reviews" onClick={() => {displayEdit(element)}} 
+                    className='access-rev-button'><FaPlus style={{ verticalAlign: "middle", margin: ' 0 auto' }}/></button>
+                  </div>
               </div>
+            </div>
           </div>
         </div>
       ))}

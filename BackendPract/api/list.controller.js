@@ -111,11 +111,11 @@ export default class ListController {
         res.status(400).json({ error })
       }
 
-      if (listResponse.modifiedCount === 0) {
-        throw new Error(
-          "unable to update review",
-        )
-      }
+      // if (listResponse.modifiedCount === 0) {
+      //   throw new Error(
+      //     "unable to update review",
+      //   )
+      // }
 
       res.json({ status: "success" })
     } catch (e) {

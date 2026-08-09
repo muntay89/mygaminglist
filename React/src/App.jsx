@@ -139,7 +139,7 @@ const App = () => {
           <div className='content'>
             <Routes>
               <Route path="/" element={<Navigate to="/mygaminglist/" replace />}/>
-              <Route path = "/mygaminglist/" element = {<Homepage reset = {reset} setReset = {setReset} setIntro = {setIntro}/>}>
+              <Route path = "/mygaminglist/" element = {<Homepage handleClick = {handleHome} reset = {reset} setReset = {setReset} setIntro = {setIntro}/>}>
               </Route>
               <Route path = "/mygaminglist/games/page/:number" element = {<Games search = {search} reset = {reset}
                 setReset = {setReset} filter = {filter} setFilter = {setFilter} setSelected = {setSelected} setIntro = {setIntro}/>}>
