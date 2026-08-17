@@ -1,28 +1,27 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Loader from '../components/Loader';
 import StarRatingInput from "../components/StarRating";
 import { api } from "../api/client";
 
 
-import { FaTrashAlt, FaCaretDown, FaTimesCircle, FaPlus, FaStar, FaStarHalfAlt, FaRegStar, FaHeart, FaRegHeart, FaPencilAlt } from "react-icons/fa";
+import { FaTrashAlt, FaTimesCircle, FaPlus, FaStar, FaStarHalfAlt, FaRegStar, FaHeart, FaRegHeart, FaPencilAlt, FaHeartBroken } from "react-icons/fa";
 
 export default function List (props) {
   const { user, isLoggedIn, login, logout } = useAuth();
-  const [selected, setSelected] = useState("playing")
+  const categories = ['completed', 'playing', 'plan to play', 'dropped']
+  const [searchParams] = useSearchParams()
+  const requestedStatus = searchParams.get('status')
+  const [selected, setSelected] = useState(categories.includes(requestedStatus)?requestedStatus:'playing')
   const [updated, setUpdated] = useState('')
   const [rating, setRating] = useState('')
   const [show, setShow] = useState(false)
   const [list, setList] = useState([])
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
-  const [changed, setChanged] = useState(true)
   const [listLoading, setListLoading] = useState(true);
   const [animatedFavoriteId, setAnimatedFavoriteId] = useState(null)
-  // let myUrl = `http://localhost:8000/api/v1/list/status/${selected}`
-  const categories = ['completed', 'playing', 'plan to play', 'dropped']
-  // const [edit, setEdit] = useState(false)
   const [data, setData] = useState([])
 
   useEffect(()=> {
@@ -33,7 +32,6 @@ export default function List (props) {
     const fetch = async() => {
       try{
         setListLoading(true)
-        // console.log(props.myAPI(gameID))
         const response = await api.get(`/list/status/${selected}`);
         console.log(response.data)
         setList(response.data)
@@ -42,7 +40,6 @@ export default function List (props) {
         setListLoading(false)
       }finally{
         setListLoading(false)
-        // setTest(false)
       }
       }
     fetch()
@@ -62,12 +59,8 @@ export default function List (props) {
     }
     try {
       await api.put(`/list/${data._id}`, {
-        listId: data._id,
-        userId: data.user,
         status: updated,
-        name: data.name,
-        rating: updated === "completed" ? rating : null,
-        card: data.card,
+        rating: updated === "completed" ? Number(rating) : null,
       });
 
       setList((prev) => {
@@ -89,9 +82,6 @@ export default function List (props) {
     }
   }
   const deleteList = async(id) => {
-    // const myAPI = (lisID) => `http://localhost:8000/api/v1/list/${lisID}`
-    
-    // const fetch = async() => {
       try{
         await api.delete(`/list/${id}`)
         setList((prev) => prev.filter((e) => e._id !== id))
@@ -100,9 +90,6 @@ export default function List (props) {
       }catch(error){
         alert(error)
       }
-      // finally{
-      //   location.reload()
-      // }
     
   }
 
@@ -188,8 +175,8 @@ export default function List (props) {
           ))}
         </ul>
       </div>
-      {list.map((entry)=> (
-        <div className='list-row' id = {entry._id} key = {entry.id}>
+      {list.length > 0 ? (list.map((entry)=> (
+        <div className='list-row' id = {entry._id} key = {entry._id}>
           <img className = 'thumbnail' id = "list-thumb" src = {entry.card} style={{marginRight: '0'}}></img>
           <div className="list-item-container">
             <div className="entry-name-cont">
@@ -230,24 +217,8 @@ export default function List (props) {
                   <span style={{fontFamily: 'VT323, monospace', marginLeft: '10px', fontSize: '15px',
                     color: 'hsl(0, 96%, 29%)', cursor:'pointer', textAlign: 'center'}}>Edit</span>
                 </div>
-                {/* <span className={`favorite-wrapper-list ${animatedFavoriteId === entry._id ? "favorite-active" : ""}`}
-                    onClick={() => saveToFavorites(entry)}>
-                      {entry.favorite ? (
-                    <FaHeart className="list-favorite" />
-                    ) : (
-                    <FaRegHeart className="list-favorite" />
-                    )}
-                    <span className="pixel pixel1"></span>
-                    <span className="pixel pixel2"></span>
-                    <span className="pixel pixel3"></span>
-                    <span className="pixel pixel4"></span>
-                </span> */}
               </div>
-          </div>
-          {/* <div className='list-butts-cont'>
-            <button className='list-butts' id = "edit-list" onClick={()=>displayEdit(entry)}>Edit<FaCaretDown/></button>
-          </div> */}
-          
+          </div> 
           <div className={`entry-backdrop ${show? 'scale-in-center' : 'scale-out-center'}`} style={{display: editOpen || deleteOpen ? 'block' : 'none'}}>
             <div className='edit-entry'>
               {editOpen && !deleteOpen && (<>
@@ -291,17 +262,12 @@ export default function List (props) {
             </div>
               <FaTimesCircle className='exit-list' onClick={()=> {setShow(false); setTimeout(()=> {setEditOpen(false); setDeleteOpen(false)}, 500)}}/>
         </div>
-        {/* <div className={`entry-backdrop ${show? 'scale-in-center' : 'scale-out-center'}`} style={{display: deleteOpen && 'block'}}>
-          <div className='edit-entry'>
-            <p className='edit-title-text' id = "del-header">Delete From List?</p>
-            <div className='list-info' id = "del-verif">
-              <button className='list-save' id = "del-verif-butt" onClick={()=> deleteList(data._id)}>Delete</button>
-              <button className='list-save' id = "del-verif-butt" onClick={()=> {setShow(false); setTimeout(()=> {setDeleteOpen(false)}, 500)}}>Cancel</button>
-            </div>
-            </div>
-        </div> */}
         </div>
-      ))}
+      ))): 
+      (<div className="no-results" style={{ backgroundColor: "hsl(0, 1%, 90%)" }}>
+          <h2 className="no-res-head">NO ENTRIES YET...</h2>
+          <FaHeartBroken className="heart-crack" />
+        </div>)}
       <div className='opac-wrap' style={{display: (editOpen || deleteOpen) ? 'block' : 'none'}}>
       </div>
       

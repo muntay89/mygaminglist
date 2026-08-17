@@ -5,19 +5,9 @@ import geralt from "../images/geralt3.png"
 import tlou from "../images/tlou.png"
 import arthur from "../images/arthur.png"
 import Embers from "../components/Embers";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/effect-coverflow";
-import "swiper/css/pagination";
-import "swiper/css/navigation";
-import { EffectCoverflow, Pagination, Navigation } from "swiper/modules";
-import fog from '../images/foggy.jpg'
+import PacmanLoader from "react-spinners/PacmanLoader";
 import { FaSearch, FaPencilAlt, FaPlus, FaPeopleArrows, FaChevronLeft, FaChevronRight } from "react-icons/fa";
-
-export default function Homepage ({reset, setReset, setIntro}){
-  const { user, isLoggedIn, loading, login, logout } = useAuth();
-  const [activeIndex, setActiveIndex] = useState(0);
-  const features = [
+const features = [
   {
     title: "Search",
     text: "search and gain info on thousands of games.",
@@ -40,16 +30,40 @@ export default function Homepage ({reset, setReset, setIntro}){
   },
 ]
 
-  const displayFeatures = [...features, ...features];
 
-    if (reset === true){
-      console.log('reset')
-      window.localStorage.setItem('NUMBER', JSON.stringify(1))
-    }
+export default function Homepage ({setIntro}){
+  const { loading } = useAuth();
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [assetsLoaded, setAssetsLoaded] = useState(false)
+  const displayFeatures = [...features, ...features];
 
     useEffect(()=> {
       setIntro('Welcome to my GamingList!')
     },[])
+
+    useEffect(() => {
+      const images = [geralt, tlou, arthur]
+
+      const imagePromise = images.map((src) => {
+        return new Promise((resolve) => {
+          const img = new Image()
+          img.onload = resolve
+          img.onerror = resolve
+          img.src = src
+          if (img.complete) {
+            resolve()
+          }
+        })
+      })
+      const fontsLoaded = document.fonts ? document.fonts.ready : Promise.resolve()
+      Promise.all([...imagePromise, fontsLoaded]).then(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setAssetsLoaded(true)
+          })
+        })
+      })
+    })
   const prevSlide = () => {
       setActiveIndex((prev) => (prev - 1 + features.length) % features.length);
     };
@@ -70,57 +84,64 @@ export default function Homepage ({reset, setReset, setIntro}){
   };
 
   if (loading){
-    return <Loader/>
+    <div className='loader' id = 'homepage-loader'>
+        <PacmanLoader color="rgba(145, 3, 3, 1)" />
+      </div>
   }
   return(
-    <div className='homepage'>
-      <div className='homepage-cont'>
-        <p className='homepage-title' >MyGamingList</p>
-        <div className="homepage-carousel">
-          <button className="carousel-btn left-btn" onClick={prevSlide} aria-label="Previous feature">
-            <FaChevronLeft />
-          </button>
-          <div className="homepage-carousel-track">
-            {features.map((feature, index) => (
-              <div
-                key={feature.title}
-                className={`homepage-feature ${getCardPosition(index)}`}
-              >
-                <p className="feature-text">
-                  {feature.title} {feature.icon}
-                </p>
-                <p className="feature-side">{feature.text}</p>
-              </div>
+    <>
+    {!assetsLoaded && (
+      <div className='loader' id = 'homepage-loader'>
+        <PacmanLoader color="rgba(145, 3, 3, 1)" />
+      </div>
+    )}
+
+      <div className={`homepage ${assetsLoaded ? 'homepage-ready' : 'homepage-loading'}`}>
+        <div className='homepage-cont'>
+          <p className='homepage-title' >MyGamingList</p>
+          <div className="homepage-carousel">
+            <button className="carousel-btn left-btn" onClick={prevSlide} aria-label="Previous feature">
+              <FaChevronLeft />
+            </button>
+            <div className="homepage-carousel-track">
+              {features.map((feature, index) => (
+                <div
+                  key={feature.title}
+                  className={`homepage-feature ${getCardPosition(index)}`}
+                >
+                  <p className="feature-text">
+                    {feature.title} {feature.icon}
+                  </p>
+                  <p className="feature-side">{feature.text}</p>
+                </div>
+              ))}
+            </div>
+            <button className="carousel-btn right-btn" onClick={nextSlide} aria-label="Next feature">
+              <FaChevronRight />
+            </button>
+          </div>
+          <div className="homepage-dots">
+            {features.map((_, index) => (
+              <button
+                key={index}
+                className={index === activeIndex ? 'dot active-dot' : 'dot'}
+                onClick={() => setActiveIndex(index)}
+                aria-label={`Go to feature ${index + 1}`}
+              />
             ))}
           </div>
-          <button className="carousel-btn right-btn" onClick={nextSlide} aria-label="Next feature">
-            <FaChevronRight />
-          </button>
-        </div>
-        <div className="homepage-dots">
-          {features.map((_, index) => (
-            <button
-              key={index}
-              className={index === activeIndex ? 'dot active-dot' : 'dot'}
-              onClick={() => setActiveIndex(index)}
-              aria-label={`Go to feature ${index + 1}`}
-            />
-          ))}
-        </div>
-        <div className="mountains"></div>
-        <div className="firelight"></div>
-        <div className="vignette"></div>
-        {/* <img src={fog} className="fog fog1" alt="" />
-        <img src={fog} className="fog fog2" alt="" /> */}
-        <Embers/>
-        {/* <img src={fog} className="fog"/> */}
-        <div className="homepage-img-cont">
-          <img src={geralt} id = 'geralt' />
-          <img src={tlou} id = "tlou"  />
-          <img src={arthur} id = "arthur"/>
+          <div className="mountains"></div>
+          <div className="firelight"></div>
+          <div className="vignette"></div>
+          <Embers/>
+          <div className="homepage-img-cont">
+            <img src={geralt} id = 'geralt' />
+            <img src={tlou} id = "tlou"  />
+            <img src={arthur} id = "arthur"/>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
-    
+  
 }

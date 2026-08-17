@@ -6,11 +6,11 @@ import { api } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 
 
-import { FaArrowLeft, FaArrowRight, FaPlus, FaTimesCircle, FaHeartBroken, FaBars } from "react-icons/fa";
+import { FaArrowLeft, FaArrowRight, FaPlus, FaTimesCircle, FaHeartBroken } from "react-icons/fa";
 
 export default function Games (props){
   let {number} = useParams()
-  const { user, isLoggedIn, login, logout } = useAuth()
+  const { isLoggedIn } = useAuth()
   const [searchResults, setSearchResults] = useState([])
   const [show, setShow] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -20,7 +20,7 @@ export default function Games (props){
   const [added, setAdded] = useState(false)
   const [close, setClose] = useState(false)
   const [hasNext, setHasNext] = useState(false)
-  const [updated, setUpdated] = useState('completed')
+  const [updated, setUpdated] = useState('playing')
   const [rating, setRating] = useState('')
   const page = Math.max(1, Number.parseInt(number, 10) || 1)
   const checkForEntry = (gameID) => api.get(`/list/${gameID}`);
@@ -93,7 +93,6 @@ export default function Games (props){
   }
   const changeRating = (event) => {
     setRating(event)
-    // setChanged(true)
   }
   const navInfo = (element) => {
     props.setSelected(element.name)
@@ -114,8 +113,8 @@ export default function Games (props){
       }
       else{
         setData(thing)
-        setUpdated(thing.status)
-        setRating(thing.rating ?? '')
+        setUpdated('playing')
+        setRating('')
         setEdit(true)
         setShow(true)
       }
@@ -123,9 +122,6 @@ export default function Games (props){
   else {
     navigate('/mygaminglist/login')
   }
-    // props.setEdit(true)
-    // setShow(true)
-    // setData(thing)
   }
 
   const saveToList = async(status, data, gameRating) => {
@@ -136,7 +132,6 @@ export default function Games (props){
     try{
       await api.post('/list/new', {
         gameId: data.id,
-        userId: "dev-user-123", // temporary bridge until auth
         status,
         name: data.name,
         rating: status === "completed" ? gameRating : null,
@@ -151,9 +146,6 @@ export default function Games (props){
       alert(error)
     }
   }
-
-  // const results = props.searchResults?.results || [];
-  // const count = results.count
 
   if (loading || !hasFetched) {
     return (
@@ -247,7 +239,6 @@ export default function Games (props){
                 <StarRatingInput list = {true} rating = {rating} setRating = {setRating}></StarRatingInput>
               </div>)}
               <button className='list-save' onClick={()=> saveToList(updated, data, rating)}><FaPlus className='plusicon' id = 'add-lis-cat'/></button>
-              {/* <button className='list-save'>...</button> */}
             </div>
           </div>
             <FaTimesCircle className='exit-list' onClick={()=> {setShow(false); setTimeout(()=> {setEdit(false)}, 500)}}/>

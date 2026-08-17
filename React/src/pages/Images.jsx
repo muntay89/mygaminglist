@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
 import { useNavigate, useParams } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { api } from "../api/client";
@@ -12,7 +11,6 @@ import Loader from "../components/Loader";
 import { FaArrowLeft, FaArrowRight, FaTimesCircle, FaHeartBroken } from "react-icons/fa";
 
 export default function Images (props) {
-  const { user, isLoggedIn, login, logout } = useAuth();
   const navigate = useNavigate()
   const [screenshots, setScreenshots] = useState([])
   const [loading, setLoading] = useState(true)

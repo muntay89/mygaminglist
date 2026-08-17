@@ -4,11 +4,7 @@ export default function Footer() {
     <footer id="footer">
         <span id="copyright">© 2026</span>
         <span id="foottitle">MyVideoGameList</span>
-        <span id="icons">
-          {/* <i className="fa-brands fa-apple fa-lg" style="color: #ffffff"></i>
-          <i className="fa-brands fa-google fa-lg" style="color: #000000"></i>
-          <i className="fa-brands fa-facebook fa-lg" style="color: #1e3050"></i>
-          <i className="fa-brands fa-twitter fa-lg" style="color: #ffffff"></i> */}
+        {/* <span id="icons">
         </span>
         <nav id="footernav">
           <ul>
@@ -18,7 +14,7 @@ export default function Footer() {
             <li><a href="">Terms of Service</a></li>
             <li><a href="">Privacy Policy</a></li>
           </ul>
-        </nav>
+        </nav> */}
       </footer>
   )
 }

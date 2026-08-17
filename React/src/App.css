@@ -52,6 +52,9 @@ button:hover {
   margin-bottom: auto;
   /* margin-top: 5px; */
 }
+.list-icon:hover{
+  color: hsl(0, 96%, 49%);
+}
 #list{
   height: 1em;
 }
@@ -306,11 +309,23 @@ form select, input{
   height: 100px;
 }
 .homepage{
-  height: 95vh;
+  height: 105vh;
   width: 100%;
   position: relative;
   background-color: hsl(0, 0%, 90%);
   box-sizing: border-box;
+}
+#homepage-loader{
+  background: radial-gradient(circle at center, #1a1a1a, #000);
+  opacity: .9;
+  transition: opacity 0.35s ease;
+  height: 105vh;
+}
+.homepage-loading {
+  display: none;
+}
+.homepage-ready {
+  visibility: visible;
 }
 @keyframes pan-up-down {
   0% {
@@ -346,13 +361,12 @@ form select, input{
   height: 1000px;
   width: 100%;
   flex: 1;
-  /* display: flex;
-  align-items: center;
-  justify-content: center; */
+  /* top: 40px; */
   position: relative;
 }
 .homepage-img-cont img{
   position: absolute;
+  opacity: 0;
   bottom: -30%;
   max-width: none;
   object-fit: contain;
@@ -364,24 +378,22 @@ form select, input{
   left: 50%;
   transform: translateX(-50%);
   bottom: -35%;
-  /* height: clamp(300px, 74vh, 700px); */
   z-index: 3;
+   animation: characterReveal 0.9s ease-out forwards;
+  animation-delay: 0.55s;
   filter: drop-shadow(0 0 25px hsl(0, 96%, 29%));
 }
-
-/* SPIDERMAN (RIGHT) */
 #tlou {
   right:5%;
-  
   z-index: 2;
-  opacity: 1;
+  animation: characterReveal 0.9s ease-out forwards;
+  animation-delay: 0.7s;
 }
-
-/* BATMAN (LEFT) */
 #arthur {
  left: 5%;
   z-index: 2;
-  opacity: 0.9;
+  animation: characterReveal 0.9s ease-out forwards;
+  animation-delay: 0.85s;
 }
 @keyframes float {
   0% {
@@ -510,9 +522,50 @@ form select, input{
     opacity: 0;
   }
 }
+@keyframes titleReveal {
+    from {
+        opacity: 0;
+        transform:
+            perspective(500px)
+            rotateX(20deg)
+            translateY(24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: 
+            perspective(500px)
+            rotateX(20deg)
+            translateY(0);
+    }
+}
+
+@keyframes featureContentReveal {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes characterReveal {
+    from {
+        opacity: 0;
+        filter: blur(6px);
+    }
+
+    to {
+        opacity: 1;
+        filter: blur(0);
+    }
+}
 .homepage-title{
   font-size: 135px;
-  opacity: 1;
+  opacity: 0;
   z-index: 5;
   margin-left: auto;
   margin-right: auto;
@@ -524,12 +577,13 @@ form select, input{
   margin-bottom: 20px;
   display: flex;
   align-items: center;
-  /* background: rgba(255, 255, 255, 0.01);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px); */
   color: white;
   font-family: "VT323", monospace;
   transform: perspective(500px) rotateX(20deg);
+}
+.homepage-ready .homepage-title{
+  animation: titleReveal 0.8s ease-out forwards;
+  animation-delay: 0.15s;
 }
 .gamepad{
   margin: auto;
@@ -550,7 +604,6 @@ form select, input{
   height: 260px;
   /* overflow: hidden; */
 }
-
 .homepage-feature {
   position: absolute;
   top: 50%;
@@ -575,20 +628,20 @@ form select, input{
 .homepage-feature.active {
   transform: translate(-50%, -50%) scale(1);
   opacity: 1;
-  z-index: 3;
+  z-index: 5;
   pointer-events: auto;
 }
 
 .homepage-feature.left {
   transform: translate(-135%, -50%) scale(0.85);
-  opacity: 0.65;
-  z-index: 2;
+  opacity: 0.85;
+  z-index: 4;
 }
 
 .homepage-feature.right {
   transform: translate(35%, -50%) scale(0.85);
-  opacity: 0.65;
-  z-index: 2;
+  opacity: 0.85;
+  z-index: 4;
 }
 
 .homepage-feature.hidden {
@@ -654,6 +707,7 @@ form select, input{
   margin-bottom: 0;
   display: flex;
   align-items: center;
+  opacity: 0;
 }
 .feature-icon{
   margin-left: auto;
@@ -668,11 +722,20 @@ form select, input{
   font-size: 25px;
   font-family: "VT323", monospace;
   width: 70%;
-  /* height: 50%; */
+  opacity: 0;
+}
+.homepage-ready .feature-text {
+  animation: featureContentReveal 0.65s ease-out forwards;
+  animation-delay: 0.35s;
+}
+
+.homepage-ready .feature-side {
+  animation: featureContentReveal 0.65s ease-out forwards;
+  animation-delay: 0.48s;
 }
 #footer {
   width: 100%;
-  height: 100px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-items: flex-end;
@@ -776,6 +839,7 @@ form select, input{
 }
 #passW{
   display: block;
+  margin-bottom: 2em;
 }
 .auth-error{
   color: hsl(0, 96%, 29%);
@@ -856,8 +920,12 @@ form select, input{
   width: 100px;
   font-size: 20px;
   font-family: "VT323", monospace;
-  color: white;
-  background-color: hsl(0, 96%, 29%);
+  vertical-align: center;
+  color: hsl(0, 96%, 29%);
+  background-color: white;
+}
+.access-rev-button:hover{
+  text-decoration: underline;
 }
 /* .plusicon{
   margin-right: 5px;
@@ -995,9 +1063,17 @@ form select, input{
 .info-rating-cont{
   display: flex;
 }
+.details-item{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-bottom: 1px solid hsl(0, 1%, 79%);
+  padding: 10px;
+  /* border-radius: 10px; */
+}
 #game-genres {
   /* font-size: 15px; */
-  margin-top: 10px;
+  margin-top: 20px;
   margin-bottom: 10px;
 }
 #release-title {
@@ -1292,7 +1368,7 @@ form select, input{
   width: 10em;
 }
 .img-container{
-  border-bottom: .5px solid hsl(0, 1%, 79%);
+  /* border-bottom: .5px solid hsl(0, 1%, 79%); */
   display: flex;
   position: relative;
   flex-direction: column;
@@ -1317,6 +1393,7 @@ form select, input{
 .details-container div{
   margin-top: 10px;
   margin-bottom: 10px;
+  
 }
 #review-activate {
   display: none;
@@ -1556,6 +1633,11 @@ form select, input{
   font-size: 25px;
   color: hsl(0, 96%, 29%);
   font-family: "VT323", monospace;
+  text-decoration: none;
+}
+#user:hover{
+  color: hsl(0, 96%, 49%);
+  text-decoration: underline;
 }
 .review-game {
   font-size: 30px;
@@ -1705,10 +1787,10 @@ form select, input{
 .list-row{
   background-color: hsl(0, 0%, 96%);
   width: 70%;
-  margin: 10px 10px 25px 10px;
+  margin: 10px 10px 50px 10px;
   border: 1px solid hsl(0, 1%, 79%);
   border-radius: 15px;
-  height: 200px;
+  height: auto;
   display: flex;
   justify-content: flex-start;
   align-items: center;
@@ -1769,7 +1851,7 @@ form select, input{
   cursor: pointer;
 }
 #list-added{
-  background-color: hsl(0, 0%, 96%);
+  background-color: white;
   color: hsl(0, 96%, 29%);
 }
 .list-cat-cont{
@@ -2020,6 +2102,8 @@ margin-bottom: auto;
   font-size: 20px;
   cursor: pointer;
   color: hsl(0, 96%, 29%);
+  background-color: white;
+  border-radius: 50px;
   z-index: 900;
   /* height: 30%; */
   /* transform: translate(-25%, -50%); */
@@ -2106,6 +2190,14 @@ margin-bottom: auto;
   border: 1px solid hsl(0, 1%, 79%);
   border-radius: 15px
 }
+.profile-top{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 100%;
+}
 .profile-user{
   font-size: 50px;
   color: hsl(0, 96%, 29%);
@@ -2154,7 +2246,7 @@ margin-bottom: auto;
 }
 .favorite-card img{
   width: 100px;
-  height: 100px;
+  height: 150px;
   object-fit: cover;
   border-radius: 15px;
   box-shadow: 2px 2px 2px grey;
@@ -3777,7 +3869,7 @@ margin-bottom: auto;
 }
 
 /* Interaction accessibility */
-a:focus-visible,
+/* a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
@@ -3787,7 +3879,7 @@ select:focus-visible,
   outline: 3px solid white;
   outline-offset: 3px;
   box-shadow: 0 0 0 5px black;
-}
+} */
 
 button:disabled,
 #previous:disabled,

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Loader from "../components/Loader";
 import { api } from "../api/client";
-import { FaStar, FaHeartBroken, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import { FaStar, FaHeartBroken, FaStarHalfAlt, FaRegStar, FaUser } from "react-icons/fa";
 
 export default function Reviews(props) {
   const { gameID } = useParams();
@@ -60,8 +60,8 @@ export default function Reviews(props) {
         reviews.map((review) => (
           <div className="review-row" key={review._id}>
             <div className="review-header">
-              <Link id="user" style = {{textDecoration: 'none'}}to = {`/mygaminglist/profile/${review.username}`}>{review.username}</Link>
-              {/* <Link id = 'profile-name' to = {`/mygaminglist/profile/${user.username}`}>{user.username}</Link> */}
+              <Link id="user" to = {`/mygaminglist/profile/${review.username}`}>
+                <FaUser style={{marginRight: '10px'}}/>{review.username}</Link>
               <span id="review-rating">
                 {[1, 2, 3, 4, 5].map((star) => {
                   const rating = Number(review.rating);
@@ -80,7 +80,6 @@ export default function Reviews(props) {
               <p className="review-game" id = 'public-reviews-game'>
                 <u>{props.selected}</u>
               </p>
-              {/* <p className="review-bold">Review</p> */}
               <p className="review-text">{review.review}</p>
             </div>
           </div>

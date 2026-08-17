@@ -1,21 +1,23 @@
 import listDAO from "../dao/listDAO.js"
 
-export default class ListController {
-    static async apiAddList(req, res, next) {
-      const VALID_STATUSES = new Set([
+const VALID_STATUSES = new Set([
         "playing",
         "completed",
         "plan to play",
         "dropped",
       ])
-      function isValidRating(rating) {
-        return (
-          Number.isFinite(rating) &&
-          rating >= 0.5 &&
-          rating <= 5 &&
-          rating * 2 === Math.floor(rating * 2)
-        )
-      }
+
+function isValidRating(rating) {
+  return (
+    Number.isFinite(rating) &&
+    rating >= 0.5 &&
+    rating <= 5 &&
+    rating * 2 === Math.floor(rating * 2)
+  )
+}
+
+export default class ListController {
+    static async apiAddList(req, res, next) {
       try {
         const gameId = Number(req.body.gameId)
         const user = req.userId
@@ -69,33 +71,75 @@ export default class ListController {
           card,
           favorite
         )
-      return res.status(201).json({
-      status: "success",
-      entry: {
-        _id: listResponse.insertedId,
-        gameId,
-        user,
-        status,
-        name,
-        rating,
-        card,
-        favorite,
-      },
-      })
-      } catch (e) {
-        res.status(500).json({ error: e.message })
+        if (listResponse?.error) {
+          console.error("Unable to add list entry:", listResponse.error)
+
+          return res.status(500).json({
+            error: "Unable to add list entry"
+          })
+        }
+        return res.status(201).json({
+        status: "success",
+        entry: {
+          _id: listResponse.insertedId,
+          gameId,
+          user,
+          status,
+          name,
+          rating,
+          card,
+          favorite,
+        },
+        })
+        } catch (e) {
+          res.status(500).json({ error: e.message })
+        }
       }
-    }
 
 
   static async apiUpdateList(req, res, next) {
     try {
       const listId = req.params.id
       const user = req.userId
-      const status = req.body.status
-      const name = req.body.name
-      const rating = req.body.rating
+      const status = req.body.status !== undefined ? String(req.body.status).trim().toLowerCase() : undefined
+      const name = req.body.name !== undefined ? String(req.body.name).trim().toLowerCase() : undefined
+      let rating = req.body.rating === '' || req.body.rating === null ? null : req.body.rating !== undefined
+        ? Number(req.body.rating) : undefined
       const favorite = req.body.favorite
+
+      if (status !== undefined && !VALID_STATUSES.has(status)) {
+        return res.status(400).json({
+          error: "Invalid list status",
+        })
+      }
+
+      if (name !== undefined && (!name || name.length > 200)) {
+        return res.status(400).json({
+        error: "Invalid game name",
+        })
+      }
+
+      if (favorite !== undefined && typeof favorite !== "boolean") {
+        return res.status(400).json({
+          error: "Favorite must be true or false",
+        })
+      }
+
+      if (rating !== undefined && rating !== null && !isValidRating(rating)) {
+        return res.status(400).json({
+          error: "Rating must be between 0.5 and 5 in 0.5 increments",
+        })
+      }
+
+      if (status === "completed" && !isValidRating(rating)) {
+        return res.status(400).json({
+          error: "Completed games require a rating from 0.5 to 5",
+        })
+      }
+
+      if (status !== undefined && status !== "completed") {
+        rating = null
+      }
 
       const listResponse = await listDAO.updateList(
         listId,
@@ -106,17 +150,21 @@ export default class ListController {
         favorite,
       )
 
-      var { error } = listResponse
-      if (error) {
-        res.status(400).json({ error })
+      if (listResponse?.error) {
+        console.error("Unable to update list entry:", listResponse.error)
+
+        return res.status(500).json({
+          error: "Unable to update list entry"
+        })
       }
 
-      // if (listResponse.modifiedCount === 0) {
-      //   throw new Error(
-      //     "unable to update review",
-      //   )
-      // }
+      if (listResponse.matchedCount === 0) {
+        return res.status(404).json({
+        error: "List entry not found"
+        })
+      }
 
+      return res.json({status: "success"})
       res.json({ status: "success" })
     } catch (e) {
       res.status(500).json({ error: e.message })
@@ -208,13 +256,4 @@ export default class ListController {
     }
   }
 
-  // static async apiGetProfile(req, res, next) {
-  //   try{
-  //     const user = req.userId
-  //     if (!user) {
-  //       return res.status(401).json({error: 'Unauthorized' })
-  //     }
-  //     let list 
-  //   }
-  // }
 }

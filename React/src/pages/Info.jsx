@@ -6,11 +6,11 @@ import StarRatingInput from "../components/StarRating";
 import { api } from "../api/client";
 
 
-import { FaPlus, FaCheck, FaPencilAlt, FaImage, FaStar, FaTimesCircle, FaHeart, FaRegHeart, FaHeartBroken } from "react-icons/fa";
+import { FaPlus, FaCheck, FaPencilAlt, FaImage, FaStar, FaTimesCircle, FaHeart, FaRegHeart, FaHeartBroken, FaComment } from "react-icons/fa";
 
 export default function Info (props) {
   let {gameID} = useParams()
-  const { user, isLoggedIn, login, logout } = useAuth();
+  const { isLoggedIn } = useAuth();
   const [game, setGame] = useState(null)
   const [screenshots, setScreenshots] = useState([])
   const [edit, setEdit] = useState(false)
@@ -18,11 +18,9 @@ export default function Info (props) {
   const [show, setShow] = useState(false)
   const [added, setAdded] = useState(false)
   const [favorite, setFavorite] = useState(false)
-  const [rendered, setRendered] = useState(false)
-  const [ssindex, setssindex] = useState(1)
   const [data, setData] = useState([])
   const [listEntry, setListEntry] = useState(null)
-  const [updated, setUpdated] = useState('completed')
+  const [updated, setUpdated] = useState('playing')
   const [rating, setRating] = useState('')
   const [favoriteAnim, setFavoriteAnim] = useState(false)
   const [deals, setDeals] = useState([])
@@ -105,7 +103,6 @@ export default function Info (props) {
     try{
       const response = await api.post('/list/new', {
         gameId: gameID,
-        userId: "dev-user-123", // temporary bridge until auth
         status,
         name: results.name,
         rating:  status === "completed" ? gameRating : null,
@@ -116,9 +113,6 @@ export default function Info (props) {
       console.log('RESPONSEE', listEntry)
       setTimeout(() => setEdit(false), 200);
       setAdded(true);
-      // const check = await checkForEntry(gameID);
-      // setListEntry(check.data[0]);
-      // setFavorite(check.data[0].favorite === true)
     }
     catch (error){
       alert(error)
@@ -202,8 +196,8 @@ export default function Info (props) {
 
   const displayEdit=(thing)=> {
     setData(thing)
-    setUpdated(thing.status)
-    setRating(thing.rating ?? '')
+    setUpdated('playing')
+    setRating('')
     setEdit(true)
     setShow(true)
   }
@@ -217,18 +211,7 @@ export default function Info (props) {
     }
   }
 
-  const changeRating = (event) => {
-    setRating(event)
-    // setChanged(true)
-  }
-
-  const showSS = (game) => {
-    let i = (ssindex - 1)
-    return game[i].image
-  }
-
   const navReview = (game) => {
-      // props.setSelected(game.name)
       navigate(`/mygaminglist/newreview/${game.id}`)
   }
   const navSS = (game) => {
@@ -267,46 +250,44 @@ export default function Info (props) {
           </div>
           <div className='details'>
               <div className='details-container'>
-                <div id = "game-genres">
-                  <span id = "genre-title"><b>Genres: </b>{genres(results)} </span>
+                <div className="details-item" id = "game-genres">
+                  <span id = "genre-title"><b>Genres: </b> </span>
+                  <span style = {{fontFamily: 'Georgia, Times New Roman, Times, serif', fontSize: '15px'}}>{genres(results)}</span>
                 </div>
-                <div id = "release-date">
-                  <span id = "release-title"><b>Release Date: </b>{results.released}</span>
+                <div className="details-item" id = "release-date">
+                  <span id = "release-title"><b>Release Date: </b></span>
+                  <span style = {{fontFamily: 'Georgia, Times New Roman, Times, serif', fontSize: '15px'}}>{results.released}</span>
                 </div>
-                <div id = "publisher">
-                  <span id = 'publisher-title'><b>Publisher(s): </b>{publishers(results)}</span>
+                <div className="details-item"  id = "publisher">
+                  <span id = 'publisher-title'><b>Publisher(s): </b></span>
+                  <span style = {{fontFamily: 'Georgia, Times New Roman, Times, serif', fontSize: '15px'}}>{publishers(results)}</span>
                 </div>
-                <div id = "esrb">
-                  <span id = 'esrb-title'><b>ESRB Rating: </b>{results.esrb_rating?.name || "No Rating Listed"}</span>
-                </div>
-                <div id = "platfrms">
-                  <span id = 'platfrm-ttle'><b>Platforms: </b>{platforms(results)}</span>
+                <div className="details-item" id = "platfrms">
+                  <span id = 'platfrm-ttle'><b>Platforms: </b></span>
+                  <span style = {{fontFamily: 'Georgia, Times New Roman, Times, serif', fontSize: '15px'}}>{platforms(results)}</span>
                 </div>
                 <div id = "butt-cont">
                   {isLoggedIn ? (
                   <>
                   {!added
-                  ?<button id = "list-add" className='game-buttons' onClick={()=>{displayEdit(results)}}><FaPlus className='plusicon' style={{marginRight: '5px'}}/>Add to List</button>
-                  :<button id = "list-added" className='game-buttons'><FaCheck style={{marginRight: '5px'}}/>Added to List</button>}
-                  <button id = "review-add" className='game-buttons' onClick={()=>{navReview(results)}}><FaPencilAlt style={{marginRight: '5px'}}/>Write a Review</button>
-                  {/* {!favorite ?<button className='game-buttons' style = {{backgroundColor: 'white'}}onClick={()=> {saveToFavorites()}}><FaRegHeart
-                  style={{margin: '0 auto', color: 'hsl(0, 96%, 29%)', fontSize: '20px'}}></FaRegHeart></button>
-                  :<button className='game-buttons' style={{backgroundColor: 'white', color: 'hsl(0, 96%, 29%)'}}><FaHeart 
-                  style={{margin: '0 auto', color: 'hsl(0, 96%, 29%)', fontSize: '20px'}} onClick={()=> {saveToFavorites()} }></FaHeart></button>} */}
+                  ?<button id = "list-add" className='game-buttons' onClick={()=>{displayEdit(results)}}><FaPlus className='plusicon' style={{marginRight: '5px', verticalAlign: 'center'}}/>Add to List</button>
+                  :<button id = "list-added" className='game-buttons'><FaCheck style={{marginRight: '5px', verticalAlign: 'center'}}/>Added to List</button>}
+                  <button id = "review-add" className='game-buttons' onClick={()=>{navReview(results)}}><FaPencilAlt style={{marginRight: '5px', verticalAlign: 'center'}}/>Write a Review</button>
                   <button className="game-buttons" style={{ backgroundColor: "white" }} onClick={saveToFavorites}>
                     <div className={`favorite-wrapper ${favoriteAnim ? "favorite-active" : ""}`}>
-                      {favorite ? (<FaHeart style={{color: "hsl(0, 96%, 29%)", fontSize: "20px",}}/>) : 
-                      (<FaRegHeart style={{color: "hsl(0, 96%, 29%)", fontSize: "20px",}}/>)}
+                      {favorite ? (<FaHeart style={{color: "hsl(0, 96%, 29%)", fontSize: "20px", verticalAlign: 'center'}}/>) : 
+                      (<FaRegHeart style={{color: "hsl(0, 96%, 29%)", fontSize: "20px", verticalAlign: 'center'}}/>)}
                         <span className="pixel pixel1"></span>
                         <span className="pixel pixel2"></span>
                         <span className="pixel pixel3"></span>
                         <span className="pixel pixel4"></span>
                     </div>
                   </button>
-                  {/* <button className='game-buttons'></button> */}
+                  <button className='game-buttons' onClick={()=> {navigate(`/mygaminglist/reviews/${results.id}`)}}><FaComment style={{marginRight: '5px', verticalAlign: 'center',}}/>Reviews</button>
                   </>
                   ) : (
-                    <button id="login-required" className="game-buttons" onClick={() => navigate("/mygaminglist/login")}>Login to use these features</button>
+                    <button className='game-buttons' onClick={()=> {navigate(`/mygaminglist/reviews/${results.id}`)}}><FaComment style={{marginRight: '5px', verticalAlign: 'center',}}/>Reviews</button>
+
                   )}
                 </div>
                 <div className={`entry-backdrop ${show? 'scale-in-center' : 'scale-out-center'}`} style={{display: edit ? 'block' : 'none'}}>
@@ -336,7 +317,6 @@ export default function Info (props) {
                           <StarRatingInput list = {true} rating = {rating} setRating = {setRating}></StarRatingInput>
                         </div>)}
                         <button className='list-save' onClick={()=> saveToList(updated, rating)}><FaPlus className='plusicon' id = 'add-lis-cat'/></button>
-                        {/* <button className='list-save'>...</button> */}
                       </div>
                     </div>
                       <FaTimesCircle className='exit-list' onClick={()=> {setShow(false); setTimeout(()=> {setEdit(false)}, 500)}}/>

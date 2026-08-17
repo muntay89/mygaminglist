@@ -22,7 +22,7 @@ export function adaptGame(game) {
         released: formatReleaseDate(game.first_release_date),
         background_image: game.cover?.image_id ? igdbImage(game.cover.image_id) : game.artworks?.[0]?.image_id ? 
         igdbImage(game.artworks[0].image_id) : game.screenshots?.[0]?.image_id,
-        rating: game.rating ? game.rating / 20 : 0,
+        rating: game.rating ? Number((game.rating / 20).toFixed(2)) : 0,
         ratings_count: game.rating_count ?? 0,
         metacritic: null,
         description_raw: game.summary ?? '',

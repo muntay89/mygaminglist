@@ -5,14 +5,13 @@ import { useAuth } from "../context/AuthContext";
 import Loader from '../components/Loader';
 import ListStatusChart from "../components/PieChart";
 import RatingDistributionChart from "../components/BarChart";
+import { FaHeartBroken, FaBars} from "react-icons/fa";
 import { api } from "../api/client";
 
 export default function Profile (props) {
-    const { user, isLoggedIn, login, logout } = useAuth();
+    const { user } = useAuth();
     let {username} = useParams()
     const [profile, setProfile] = useState(null)
-    const [listLoading, setListLoading] = useState(true)
-    const [list, setList] = useState([])
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -20,40 +19,29 @@ export default function Profile (props) {
         .then(res => {
             setProfile(res.data)
             props.setIntro(`${res.data.username}'s profile`)
+            console.log('profile', profile)
         })
         .catch(err => {
             console.log(err)
         })
     }, [username])
 
-    useEffect(() => {
-        const fetch = async() => {
-        try{
-            setListLoading(true)
-            // console.log(props.myAPI(gameID))
-            const response = await api.get(`/list/game/${username}`);
-            console.log('list', response.data)
-            setList(response.data)
-        }catch(error){
-            alert(error)
-            setListLoading(false)
-        }finally{
-            setListLoading(false)
-            // setTest(false)
-        }
-        }
-        fetch()
-  }, [profile])
 
     if (!profile) {
     return <Loader></Loader>
     }
+
+    const isOwnProfile = user?.username === profile.username
     
     return (
         <>
         <div className = 'profile-content'>
-            <div class = 'profile-container'>
-                <h1 className = 'profile-user'>{profile.username}</h1>
+            <div className = 'profile-container'>
+                <span className="profile-top">
+                    <Link to = {`/mygaminglist/profile/${profile.username}/list?status=playing`}>
+                    <FaBars className="list-icon" style={{position: 'absolute', left: '2%', top: '15%', fontSize: '40px'}}/></Link>
+                    <h1 className = 'profile-user'>{profile.username}</h1>
+                </span>
                 <p className="profile-joined">
                     <b style={{color: 'hsl(0, 96%, 29%)', marginRight: '10px'}}>Joined:</b>
                     {new Date(profile.joined).toLocaleDateString("en-US", {
@@ -62,9 +50,9 @@ export default function Profile (props) {
                     day: "numeric",
                     })}
                 </p>
-                <h2 class= 'profile-header'>Favorites</h2>
+                <h2 className = 'profile-header'>Favorites</h2>
                 <div className="profile-favorites">
-                    {profile.favorites.map(game => (
+                    {profile.favorites ? profile.favorites.map(game => (
                     <Link className='favorite-card' key={game.gameId} to={`/mygaminglist/game/${game.gameId}`}
                     onClick={()=>props.setSelected(game.name)}>
                         <img  src={game.card} />
@@ -72,9 +60,10 @@ export default function Profile (props) {
                             {game.name}
                         </div>
                     </Link>
-                    ))}
+                    )) : (<div>No favorites found<FaHeartBroken style={{verticalAlign: 'middle', 
+                    marginLeft: '10px', color: 'hsl(0, 96%, 29%)'}}/></div>)}
                 </div>
-                <h2 class= 'profile-header'>Stats</h2>
+                <h2 className = 'profile-header'>Stats</h2>
                 <div className="profile-stats">
                     <div className="profile-status">
                         <p style={{color: 'hsl(0, 96%, 29%)'}}>Playing</p>
@@ -99,17 +88,12 @@ export default function Profile (props) {
                 </div>
             </div>
             <div className="profile-charts">
-                <RatingDistributionChart className = 'profile-bar' games={list} onRatingSelect={(rating) => {setSelectedRating(rating)}}/>
-                <ListStatusChart className = 'profile-pie' stats = {profile.stats} onStatusSelect = {(status) => 
-                {navigate(`/mygaminglist/list?status=${encodeURIComponent(status)}`)}}></ListStatusChart>
+                <RatingDistributionChart className = 'profile-bar' ratings={profile.ratingDistribution} />
+                <ListStatusChart className = 'profile-pie' stats = {profile.stats} onStatusSelect = {isOwnProfile ? (status) =>
+                    navigate(`/mygaminglist/list?status=${encodeURIComponent(status)}`) : (status) => 
+                    navigate(`/mygaminglist/profile/${profile.username}/list?status=${encodeURIComponent(status)}`)
+                }></ListStatusChart>
             </div>
-            {/* {profile.favorites.map(game => (
-            <Link key={game.gameId} to={`/mygaminglist/game/${game.gameId}`}>
-                <img src={game.card} />
-                <p>{game.name}</p>
-            </Link>
-            ))}
-            <p>{profile.joined}</p> */}
         </div>
         </>
     )

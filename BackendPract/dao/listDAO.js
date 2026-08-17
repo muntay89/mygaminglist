@@ -110,6 +110,24 @@ export default class ListDAO {
         }
       }
 
+      static async getPublicListByStatus(userId, status) {
+        try{
+          const cursor = await list.find({user: userId, status: status},
+            {projection: {_id: 0,
+                          gameId: 1,
+                          name: 1,
+                          status: 1,
+                          rating: 1,
+                          card: 1,}}
+          )
+          return await cursor.toArray()
+        }
+        catch (e) {
+          console.error(`Unable to get public list: ${e}`)
+          return {error: e}
+        }
+      }
+
       static async getFavorites(userId){
         try{
           const cursor = await list.find({user: userId, favorite: true})
@@ -120,22 +138,30 @@ export default class ListDAO {
         }
       }
 
+      static async getRatingDistribution(userId){
+        try {
+          const cursor = await list.aggregate([
+            { $match : {user: userId, rating: {$gte: 0.5, $lte: 5},
+              },
+            },
+              { $group : { _id: '$rating', count: {$sum: 1},
+              },
+            },
+            {$sort: {_id: 1}},
+              ])
+            return cursor.toArray()
+        }
+        catch(error){
+          console.error(`Unable to get rating distribution: ${error}`)
+          return {error}
+        }
+      }
+
       static async getProfileStats(userId){
         try{
           return await list.aggregate([
-           {
-            $match: {
-              user: userId
-            } 
-           }, 
-           {
-            $group: {
-              _id: '$status',
-              count: {
-                $sum: 1
-              }
-            }
-           }
+           {$match: {user: userId} }, 
+           {$group: {_id: '$status',count: {$sum: 1}}}
           ]).toArray()
         } catch (e) {
           return {error: e}

@@ -14,7 +14,7 @@ export default function ListStatusChart(props){
         },
         {
         name: 'Plan to Play',
-        status: 'Plan to Play',
+        status: 'plan to play',
         value: props.stats?.['plan to play'] || 0
         },
         {
@@ -27,8 +27,8 @@ export default function ListStatusChart(props){
     const totalGames = chartData.reduce((total, item) => total + item.value, 0)
     if (totalGames === 0) {
         return (
-        <section className="profile-chart">
-            <h2>Game List Distribution</h2>
+        <section className="profile-chart" style={{textAlign: 'center'}}>
+            <h2 style={{color: 'hsl(0, 96%, 29%)'}}>Game List Distribution</h2>
             <p>No list data is available yet.</p>
         </section>
         )

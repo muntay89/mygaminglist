@@ -9,6 +9,7 @@ import { FaStar, FaPencilAlt, FaTrashAlt, FaHeartBroken, FaStarHalfAlt, FaRegSta
 export default function MyReviews (props) {
   const { user, isLoggedIn, login, logout } = useAuth()
   const [reviews, setReviews] = useState([])
+  const [backdrop, setBackdrop] = useState(false)
   const [reviewsLoading, setReviewsLoading] = useState(true)
   const [editReviewText, setEditReviewText] = useState("")
   const [editRating, setEditRating] = useState(0)
@@ -27,7 +28,6 @@ export default function MyReviews (props) {
       const fetch = async() => {
         try{
           setReviewsLoading(true)
-          // console.log(props.myAPI(gameID))
           const response = await api.get(`/reviews/my/game/`)
           setReviews(response.data)
           console.log('reviewsContent', reviews, user.id)
@@ -36,7 +36,6 @@ export default function MyReviews (props) {
           setReviewsLoading(false)
         }finally{
           setReviewsLoading(false)
-          // setTest(false)
         }
         }
       fetch()
@@ -85,9 +84,6 @@ export default function MyReviews (props) {
   }
 
   const deleteReviews = async(id) => {
-    // const myAPI = (revID) => `http://localhost:8000/api/v1/reviews/${revID}`
-    
-    // const fetch = async() => {
       try{
         // const response = await axios.delete(myAPI(id))
         await api.delete(`/reviews/${id}`);
@@ -96,9 +92,6 @@ export default function MyReviews (props) {
       }catch(error){
         alert(error)
       }
-      // finally{
-      //   location.reload()
-      // }
   }
 
   const editBox = (review) => (<textarea className='edit-input' id = {'review' + review._id}>
@@ -108,6 +101,7 @@ export default function MyReviews (props) {
 
 
   const displayDel=(thing)=> {
+    setBackdrop(true)
     setDeleteOpen(true)
     setData(thing)
   }
@@ -122,10 +116,6 @@ return(
 <div className='review-background'>
   <ul className='list-categories' id = 'review-categories'>
           <li style = {{textDecoration: 'underline', fontSize: '90%'}}>My Reviews</li>
-          {/* <Link to = {`/mygaminglist/reviews/${gameID}`} style = {{textDecoration: 'none', color: 'hsl(0, 96%, 29%)', fontSize: '80%'}}>
-            <li>Reviews</li></Link>
-          <Link to = {`/mygaminglist/newreview/${gameID}`} style = {{textDecoration: 'none', color: 'hsl(0, 96%, 29%)', fontSize: '80%'}}>
-            <li>New Review</li></Link> */}
   </ul>
     {reviews.length > 0 ? (reviews.map((review) => (
       <div className='review-row' key = {review._id}>
@@ -147,7 +137,6 @@ return(
         </div>
         <div id = {review._id} className='review-content'>
           <p className='review-game' id = 'public-reviews-game'><u>{review.gameTitle}</u></p>
-          {/* <p className='review-bold'>Review</p> */}
           {editID === review._id && isLoggedIn && review.userId === user.id
           ? (<><textarea id = "new_review" className='edit-input' value = {editReviewText} onChange={(e) => setEditReviewText(e.target.value)}></textarea>
               <div className="review-final">
@@ -183,11 +172,11 @@ return(
               <p className='edit-title-text' id = "del-header">Delete Review?</p>
               <div className='list-info' id = "del-verif">
                 <button className='list-save' id = "del-verif-butt" onClick={()=> deleteReviews(data._id)}>Delete</button>
-                <button className='list-save' id = "del-verif-butt" onClick={()=> setDeleteOpen(false)}>Cancel</button>
+                <button className='list-save' id = "del-verif-butt" onClick={()=> {setDeleteOpen(false); setBackdrop(false)}}>Cancel</button>
               </div>
               </div>
           </div>
-        <div className='opac-wrap' style={{display: (props.edit || props.del) ? 'block' : 'none'}}>
+        <div className='opac-wrap' style={{display: (backdrop) ? 'block' : 'none'}}>
         </div>
       </div>
     ))):
@@ -198,11 +187,4 @@ return(
   }
   </div>
   )
-// if (reviews.length == 0) {
-//   return(
-//   <div className='no-results'>
-//     <h2 className='no-res-head'>NO REVIEWS FOUND...</h2>
-//     <FaHeartBroken className='heart-crack'/>
-//     </div>
-// )}
 }

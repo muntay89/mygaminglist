@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {FaStar, FaStarHalfAlt, FaRegStar,} from "react-icons/fa";
-import List from "../pages/List";
 
 export default function StarRatingInput(props) {
     const [hoverValue, setHoverValue] = useState(null);
@@ -41,11 +40,6 @@ export default function StarRatingInput(props) {
                 aria-checked={Number(props.rating) === starNumber} disabled={disabled} onMouseEnter={() => setHoverValue(starNumber)} 
                 onFocus={() => setHoverValue(starNumber) } onBlur={() => setHoverValue(null)} onClick={() => selectRating(starNumber)}/>
             </div>))}
-            {/* <span className="rating-number" aria-live="polite">
-                {displayedValue > 0
-                ? `${displayedValue}/5`
-                : "Not rated"}
-            </span> */}
         </div>
     );
     }

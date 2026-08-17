@@ -3,7 +3,7 @@ import { FaBars, FaUser } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 
 export default function Header(props) {
-  const { user, isLoggedIn, logout, loading } = useAuth()
+  const { user, isLoggedIn, logout } = useAuth()
   const navigate = useNavigate()
   const handleLogout = async () => {
     await logout();

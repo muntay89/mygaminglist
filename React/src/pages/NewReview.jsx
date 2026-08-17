@@ -28,9 +28,6 @@ export default function Newreview (props) {
         catch(error){
           alert(error)
         }
-        // finally{
-        //   location.reload()
-        // }
     }
     else{
       alert('Review cannot be empty')

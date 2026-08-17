@@ -13,14 +13,40 @@ export default class ReviewsController {
 
   static async apiPostReview(req, res, next) {
     try {
-      const gameId = parseFloat(req.body.gameId)
-      const gameTitle = req.body.gameTitle
-      const review = req.body.review
+      const gameId = Number(req.body.gameId)
+      const gameTitle = String(req.body.gameTitle || '').trim()
+      const review = String(req.body.review || '').trim()
       const { id: userId, username } = req.session.user;
-      const rating = parseFloat(req.body.rating)
+      const rating = Number(req.body.rating)
+
+      if (!Number.isInteger(gameId) || gameId <= 0) {
+        return res.status(400).json({
+          error: "Invalid game ID",
+        })
+      }
+
+      if (!gameTitle || gameTitle.length > 200) {
+        return res.status(400).json({
+          error: "Invalid game title",
+        })
+      }
+
+      if (!review) {
+        return res.status(400).json({
+          error: "Review cannot be empty",
+        })
+      }
+
+      if (review.length > 5000) {
+        return res.status(400).json({
+          error: "Review cannot exceed 5000 characters",
+        })
+      }
+
       if (!ReviewsController.isValidHalfStarRating(rating)) {
         return res.status(400).json({ error: "Rating must be between 0.5 and 5 in 0.5 increments" });
       }
+
       const reviewResponse = await ReviewsDAO.addReview(
         gameId,
         gameTitle, 
@@ -52,33 +78,45 @@ export default class ReviewsController {
   }
 
   static async apiUpdateReview(req, res, next) {
-  try {
-    const reviewId = req.params.id;
-    const review = req.body.review;
-    const user = req.userId;
-    const rating = parseFloat(req.body.rating);
-    if (!ReviewsController.isValidHalfStarRating(rating)) {
-        return res.status(400).json({ error: "Rating must be between 0.5 and 5 in 0.5 increments" });
+    try {
+      const reviewId = req.params.id
+      const review = String(req.body.review || "").trim()
+      const user = req.userId
+      const rating = Number(req.body.rating)
+
+      if (!review) {
+        return res.status(400).json({
+          error: "Review cannot be empty",
+        })
       }
-    const reviewResponse = await ReviewsDAO.updateReview(
-      reviewId,
-      user,
-      review,
-      rating
-    );
 
-    if (reviewResponse?.error) {
-      return res.status(400).json({ error: reviewResponse.error });
+      if (review.length > 5000) {
+        return res.status(400).json({
+          error: "Review cannot exceed 5000 characters",
+        })
+      }
+      if (!ReviewsController.isValidHalfStarRating(rating)) {
+          return res.status(400).json({ error: "Rating must be between 0.5 and 5 in 0.5 increments" });
+        }
+      const reviewResponse = await ReviewsDAO.updateReview(
+        reviewId,
+        user,
+        review,
+        rating
+      );
+
+      if (reviewResponse?.error) {
+        return res.status(400).json({ error: reviewResponse.error });
+      }
+
+      if (reviewResponse.matchedCount === 0) {
+        return res.status(404).json({ error: "review not found" });
+      }
+
+      return res.json({ status: "success" });
+    } catch (e) {
+      return res.status(500).json({ error: e.message });
     }
-
-    if (reviewResponse.matchedCount === 0) {
-      return res.status(404).json({ error: "review not found" });
-    }
-
-    return res.json({ status: "success" });
-  } catch (e) {
-    return res.status(500).json({ error: e.message });
-  }
 }
 
 

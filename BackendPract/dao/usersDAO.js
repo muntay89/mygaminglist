@@ -9,6 +9,7 @@ export default class UsersDao{
     }
     try {
       users = await conn.db("users").collection("users")
+      await users.createIndex({ username: 1 }, { unique: true })
     } catch (e) {
       console.error(`Unable to establish collection handles in userDAO: ${e}`)
     }

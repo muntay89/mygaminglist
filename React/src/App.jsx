@@ -18,18 +18,12 @@ import MyReviews from './pages/MyReviews';
 import Reviews from './pages/Reviews';
 import AllReviews from './pages/AllReviews';
 import List from './pages/List';
+import PublicList from './pages/PublicList';
 import Login from './pages/Login'
 import Signup from './pages/Signup';
 import Profile from './pages/Profile';
 import FreeGames from './pages/Free';
 import { AuthProvider } from "./context/AuthContext";
-
-
-
-import axios, { AxiosError } from 'axios'
-import { api } from "./api/client";
-import { RAWG_KEY } from "./api/rawg";
-
 import 'swiper/css';
 import 'swiper/css/effect-coverflow';
 import 'swiper/css/pagination';
@@ -39,7 +33,6 @@ import 'swiper/css/navigation';
 
 const App = () => {
   const [pageIndex, setPageindex] = useState(1)
-  const [submitted, setSubmission] = useState(false)
   const [selected, setSelected] = useState('')
   const [reset, setReset] = useState(false)
   const [list, setList] = useState([])
@@ -131,7 +124,7 @@ const App = () => {
           <div className='stick'>
             <Header handleClick = {handleHome}/>
             <div className='container2'>
-              <Navbar submitted = {submitted} queried = {queried} search = {search} handleSearch = {handleSearch} setSearch = {setSearch} handleClick = {handleHome} 
+              <Navbar queried = {queried} search = {search} handleSearch = {handleSearch} setSearch = {setSearch} handleClick = {handleHome} 
               filter = {filter} setFilter = {setFilter} />
               <Introbar filter = {filter} selected = {selected} pageIndex = {pageIndex} intro = {intro}/>
             </div>
@@ -160,6 +153,7 @@ const App = () => {
               <Route path = "/loader" element = {<Loader/>}>
               </Route>
               <Route path = "/mygaminglist/list" element = {<ProtectedRoute><List setIntro = {setIntro} setSelected = {setSelected} /></ProtectedRoute>} ></Route>
+              <Route path = "/mygaminglist/profile/:username/list" element = {<PublicList setIntro = {setIntro} setSelected = {setSelected} />} ></Route>
               <Route path = '/mygaminglist/profile/:username' element = {<Profile setIntro = {setIntro} setSelected = {setSelected}/>}></Route>
               <Route path="/mygaminglist/free" element={<FreeGames setIntro={setIntro} />}/>
             </Routes> 
