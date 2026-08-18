@@ -28,7 +28,7 @@ export default function MyReviews (props) {
       const fetch = async() => {
         try{
           setReviewsLoading(true)
-          const response = await api.get(`/reviews/my/game/`)
+          const response = await api.get(`/reviews/my/game`)
           setReviews(response.data)
           console.log('reviewsContent', reviews, user.id)
         }catch(error){
