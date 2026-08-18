@@ -32,6 +32,7 @@ export default function MyReviews (props) {
           setReviews(response.data)
           console.log('reviewsContent', reviews, user.id)
         }catch(error){
+          console.log(error)
           alert(error?.response?.data?.error ?? `Failed: ${error?.response?.status ?? error.message}`);
           setReviewsLoading(false)
         }finally{
