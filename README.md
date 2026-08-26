@@ -6,7 +6,7 @@ MyGamingList lets users discover games, organize a personal library, rate comple
 
 Originally developed as a semester project, MyGamingList was expanded into a production-style portfolio application with session-based authentication, third-party API integration, protected REST endpoints, responsive design, accessibility-focused UI behavior, and server-side data validation.
 
-### [Live Demo](https://my-gaming-list-seven.vercel.app/mygaminglist/)
+### [Live Demo](https://my-gaming-list-seven.vercel.app/mygaminglist)
 
 ---
 
