@@ -3,8 +3,8 @@ export default function Footer() {
   return(
     <footer id="footer">
         <span id="copyright">© 2026</span>
-        <span id="foottitle">MyVideoGameList</span>
-        {/* <span id="icons">
+        <span id="foottitle">MyGamingList</span>
+        <span id="icons">
         </span>
         <nav id="footernav">
           <ul>
@@ -14,7 +14,7 @@ export default function Footer() {
             <li><a href="">Terms of Service</a></li>
             <li><a href="">Privacy Policy</a></li>
           </ul>
-        </nav> */}
+        </nav>
       </footer>
   )
 }

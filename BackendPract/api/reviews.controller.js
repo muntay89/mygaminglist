@@ -1,4 +1,5 @@
 import ReviewsDAO from "../dao/reviewsDAO.js"
+import ListDAO from "../dao/listDAO.js"
 
 export default class ReviewsController {
   
@@ -15,6 +16,7 @@ export default class ReviewsController {
     try {
       const gameId = Number(req.body.gameId)
       const gameTitle = String(req.body.gameTitle || '').trim()
+      const gameImage = req.body.gameImage
       const review = String(req.body.review || '').trim()
       const { id: userId, username } = req.session.user;
       const rating = Number(req.body.rating)
@@ -47,17 +49,38 @@ export default class ReviewsController {
         return res.status(400).json({ error: "Rating must be between 0.5 and 5 in 0.5 increments" });
       }
 
+      const existingReviews = await ReviewsDAO.getReviewsByIdAndUser(gameId, userId)
+      if (existingReviews?.length > 0) {
+        return res.status(409).json({error: 'You have already reviewed this game'})
+      }
+
       const reviewResponse = await ReviewsDAO.addReview(
         gameId,
-        gameTitle, 
+        gameTitle,
+        gameImage, 
         userId,
         username,
         review,
         rating,
       )
-      console.log('review', req.body.gameTitle)
-      res.json({ status: "success" })
+      const listResult = await ListDAO.upsertFromReview(
+        userId,
+        gameId,
+        gameTitle,
+        gameImage, 
+        rating
+      )
+      if (listResult?.error) {
+            throw listResult.error
+        }
+
+        return res.status(201).json({
+            status: "success"
+        })
     } catch (e) {
+      if (e.code === 11000){
+        return res.status(409).json({error: 'You have already reviewed this game'})
+      }
       res.status(500).json({ error: e.message })
     }
   }
@@ -81,8 +104,15 @@ export default class ReviewsController {
     try {
       const reviewId = req.params.id
       const review = String(req.body.review || "").trim()
-      const user = req.userId
+      const userId = req.userId
       const rating = Number(req.body.rating)
+      const existingReview = await ReviewsDAO.getReview(reviewId)
+
+      if (!existingReview){
+        return res.status(404).json({
+          error: 'Review not found'
+        })
+      }
 
       if (!review) {
         return res.status(400).json({
@@ -100,7 +130,7 @@ export default class ReviewsController {
         }
       const reviewResponse = await ReviewsDAO.updateReview(
         reviewId,
-        user,
+        userId,
         review,
         rating
       );
@@ -113,6 +143,17 @@ export default class ReviewsController {
         return res.status(404).json({ error: "review not found" });
       }
 
+      const updateList = await ListDAO.upsertFromReview(
+        userId,
+        existingReview.gameId,
+        existingReview.gameTitle,
+        existingReview.gameImage,
+        rating
+      )
+
+      if (updateList?.error) {
+        throw updateList.error
+      }
       return res.json({ status: "success" });
     } catch (e) {
       return res.status(500).json({ error: e.message });

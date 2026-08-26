@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import Loader from '../components/Loader';
 import StarRatingInput from "../components/StarRating";
 import { api } from "../api/client";
@@ -17,6 +17,7 @@ export default function MyReviews (props) {
   const [editID, setEditID] = useState('')
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [data, setData] = useState([])
+  const navigate = useNavigate()
   let {gameID} = useParams()
 
   useEffect(()=> {
@@ -30,7 +31,6 @@ export default function MyReviews (props) {
           setReviewsLoading(true)
           const response = await api.get(`/reviews/my/game`)
           setReviews(response.data)
-          console.log('reviewsContent', reviews, user.id)
         }catch(error){
           console.log(error)
           alert(error?.response?.data?.error ?? `Failed: ${error?.response?.status ?? error.message}`);
@@ -137,7 +137,7 @@ return(
           </span>)}
         </div>
         <div id = {review._id} className='review-content'>
-          <p className='review-game' id = 'public-reviews-game'><u>{review.gameTitle}</u></p>
+          <p className='review-game' id = 'public-reviews-game' onClick={() => navigate(`/mygaminglist/game/${review.gameId}`)}><u>{review.gameTitle}</u></p>
           {editID === review._id && isLoggedIn && review.userId === user.id
           ? (<><textarea id = "new_review" className='edit-input' value = {editReviewText} onChange={(e) => setEditReviewText(e.target.value)}></textarea>
               <div className="review-final">

@@ -3,7 +3,8 @@ import { igdbRequest } from "../services/igdb.service.js"
 import { adaptGame } from "../services/igdb.adapter.js"
 
 const router = express.Router()
-
+let trendingCache = null
+let trendingCacheExpires = 0
 
 const PLATFORM_GROUPS = {
     pc: [6],
@@ -87,6 +88,50 @@ router.get('/games', async (req, res) => {
     catch(error) {
         console.error(`IGDB search error:`, error)
         res.status(500).json({error: 'Unable to search IGDB'})
+    }
+})
+
+router.get('/games/trending', async (req, res) => {
+    try {
+        if(trendingCache && Date.now() < trendingCacheExpires) {
+            return res.json(trendingCache)
+        }
+        const popularity = await igdbRequest(
+            'popularity_primitives',
+            `fields game_id, value, popularity_type;
+            where popularity_type = 3;
+            sort value desc;
+            limit 10;`
+        )
+        const ids = popularity.map(item => item.game_id)
+
+        if (!ids.length) {
+            return res.json([])
+        }
+
+        const games = await igdbRequest(`games`,
+            `fields
+            id,
+            name,
+            slug,
+            first_release_date,
+            rating,
+            rating_count,
+            cover.image_id,
+            artworks.image_id,
+            screenshots.image_id;
+        where id = (${ids.join(',')});
+        limit ${ids.length};`
+        )
+        const gameMap = new Map(games.map(game => [game.id, game]))
+        const orderedGames = ids.map(id=> gameMap.get(id)).filter(Boolean).map(adaptGame)
+        trendingCache = orderedGames
+        trendingCacheExpires = Date.now() + 1000 * 60 * 30
+        res.json(orderedGames)
+    }
+    catch (error) {
+        console.error('IGDB trending error:', error)
+        res.status(500).json({error: 'Unable to load trending games'})
     }
 })
 

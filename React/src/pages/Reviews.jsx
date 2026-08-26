@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import Loader from "../components/Loader";
 import { api } from "../api/client";
 import { FaStar, FaHeartBroken, FaStarHalfAlt, FaRegStar, FaUser } from "react-icons/fa";
@@ -8,6 +8,8 @@ export default function Reviews(props) {
   const { gameID } = useParams();
   const [reviews, setReviews] = useState([])
   const [reviewsLoading, setReviewsLoading] = useState(true)
+  const [hasReview, setHasReview] = useState(false)
+  const navigate = useNavigate()
 
   useEffect(() => {
     props.setIntro(`${props.selected} - Reviews`);
@@ -18,7 +20,9 @@ export default function Reviews(props) {
       try {
         setReviewsLoading(true);
         const response = await api.get(`/reviews/game/${gameID}`);
-        setReviews(response.data);
+        const reviewCheck = await api.get(`/reviews/my/game/${gameID}`)
+        setReviews(response.data)
+        setHasReview(reviewCheck.data?.length > 0)
       } catch (error) {
         alert(
           error?.response?.data?.error ??
@@ -39,21 +43,21 @@ export default function Reviews(props) {
   return (
     <div className="review-background">
       <ul className="list-categories" id="review-categories">
-        <Link
+        {hasReview && (<Link
           to={`/mygaminglist/myreviews/${gameID}`}
           style={{ textDecoration: "none", color: "hsl(0, 96%, 29%)", fontSize: '80%'}}
         >
-          <li>My Reviews</li>
-        </Link>
+          <li>My Review</li>
+        </Link>)}
         <li style={{ textDecoration: "underline", fontSize: '90%' }}>
           Reviews
         </li>
-        <Link
+        {!hasReview && (<Link
           to={`/mygaminglist/newreview/${gameID}`}
           style={{ textDecoration: "none", color: "hsl(0, 96%, 29%)", fontSize: '80%'}}
         >
           <li>New Review</li>
-        </Link>
+        </Link>)}
       </ul>
 
       {reviews.length > 0 ? (
@@ -77,7 +81,7 @@ export default function Reviews(props) {
             </div>
 
             <div id={review._id} className="review-content">
-              <p className="review-game" id = 'public-reviews-game'>
+              <p className="review-game" id = 'public-reviews-game' onClick={() => navigate(`/mygaminglist/game/${gameID}`)}>
                 <u>{props.selected}</u>
               </p>
               <p className="review-text">{review.review}</p>

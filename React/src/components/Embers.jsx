@@ -2,12 +2,14 @@ import { useMemo } from "react";
 
 function Embers() {
   const embers = useMemo(() => {
-    return Array.from({ length: 24 }, (_, i) => ({
+    const duration = 12 + Math.random() * 1.5
+    return Array.from({ length: 36 }, (_, i) => ({
       id: i,
       left: `${Math.random() * 100}%`,
-      delay: `${Math.random() * 8}s`,
-      duration: `${6 + Math.random() * 6}s`,
-      scale: 0.6 + Math.random() * 1.2
+      delay: `${Math.random() * duration}s`,
+      duration: `${duration}s`,
+      scale: 0.5 + Math.random() * 1,
+      size: `${4 + Math.random() * 5}px`,
     }));
   }, []);
 

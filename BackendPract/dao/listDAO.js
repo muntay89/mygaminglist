@@ -168,4 +168,33 @@ export default class ListDAO {
         }
       }
 
+      static async upsertFromReview(userId, gameId, name, card, rating) {
+        try{
+          return await list.updateOne(
+            {
+              user: userId,
+              gameId: Number(gameId)
+            },
+            {
+              $set: {
+                status: 'completed',
+                rating: Number(rating),
+                name,
+                ...(card ? {card} : {})
+              },
+              $setOnInsert: {
+                favorite: false
+              }
+            },
+            {
+              upsert: true
+            }
+          )
+        }
+        catch(e) {
+          console.error(`Unable to sync review with list: ${e}`)
+          return {error: e}
+        }
+      }
+
 }

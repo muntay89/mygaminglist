@@ -11,16 +11,26 @@ export default class ReviewsDAO {
     }
     try {
       reviews = await conn.db("reviews").collection("reviews")
+      await reviews.createIndex(
+        {
+          userId: 1,
+          gameId: 1
+        },
+        {
+          unique: true
+        }
+      )
     } catch (e) {
       console.error(`Unable to establish collection handles in userDAO: ${e}`)
     }
   }
 
-  static async addReview(gameId, gameTitle, userId, username, review, rating) {
+  static async addReview(gameId, gameTitle, gameImage, userId, username, review, rating) {
     try {
       const reviewDoc = {
         gameId: gameId,
         gameTitle: gameTitle,
+        gameImage: gameImage,
         userId: new ObjectId(userId),
         username: username,
         review: review,

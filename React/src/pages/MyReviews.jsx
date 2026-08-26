@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import Loader from '../components/Loader';
 import StarRatingInput from "../components/StarRating";
 import { api } from "../api/client";
@@ -17,6 +17,8 @@ export default function MyReviews (props) {
   const [editID, setEditID] = useState('')
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [data, setData] = useState([])
+  const [hasReview, setHasReview] = useState(false)
+  const navigate = useNavigate()
   let {gameID} = useParams()
 
   useEffect(()=> {
@@ -30,7 +32,7 @@ export default function MyReviews (props) {
           setReviewsLoading(true)
           const response = await api.get(`/reviews/my/game/${gameID}`)
           setReviews(response.data)
-          console.log('reviewsContent', reviews, user.id)
+          setHasReview(response.data?.length > 0)
         }catch(error){
           alert(error?.response?.data?.error ?? `Failed: ${error?.response?.status ?? error.message}`);
           setReviewsLoading(false)
@@ -89,6 +91,7 @@ export default function MyReviews (props) {
         await api.delete(`/reviews/${id}`);
         setReviews((prev) => prev.filter((r) => r._id !== id));
         setDeleteOpen(false)
+        navigate(`/mygaminglist/reviews/${gameID}`)
       }catch(error){
         alert(error)
       }
@@ -115,11 +118,11 @@ if(reviewsLoading){
 return(
 <div className='review-background'>
   <ul className='list-categories' id = 'review-categories'>
-          <li style = {{textDecoration: 'underline', fontSize: '90%'}}>My Reviews</li>
+          <li style = {{textDecoration: 'underline', fontSize: '90%'}}>My Review</li>
           <Link to = {`/mygaminglist/reviews/${gameID}`} style = {{textDecoration: 'none', color: 'hsl(0, 96%, 29%)', fontSize: '80%'}}>
             <li>Reviews</li></Link>
-          <Link to = {`/mygaminglist/newreview/${gameID}`} style = {{textDecoration: 'none', color: 'hsl(0, 96%, 29%)', fontSize: '80%'}}>
-            <li>New Review</li></Link>
+          {!hasReview && (<Link to = {`/mygaminglist/newreview/${gameID}`} style = {{textDecoration: 'none', color: 'hsl(0, 96%, 29%)', fontSize: '80%'}}>
+            <li>New Review</li></Link>)}
   </ul>
     {reviews.length > 0 ? (reviews.map((review) => (
       <div className='review-row' key = {review._id}>
@@ -140,7 +143,7 @@ return(
           </span>)}
         </div>
         <div id = {review._id} className='review-content'>
-          <p className='review-game' id = 'public-reviews-game'><u>{props.selected}</u></p>
+          <p className='review-game' id = 'public-reviews-game' onClick={() => navigate(`/mygaminglist/game/${gameID}`)}><u>{props.selected}</u></p>
           {editID === review._id && isLoggedIn && review.userId === user.id
           ? (<><textarea id = "new_review" className='edit-input' value = {editReviewText} onChange={(e) => setEditReviewText(e.target.value)}></textarea>
               <div className="review-final">
