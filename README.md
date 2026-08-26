@@ -1,589 +1,401 @@
 # MyGamingList
 
-MyGamingList is a full-stack game tracking application for discovering games, building a personal library, rating completed titles, writing reviews, managing favorites, and viewing public user profiles and game lists.
+**A full-stack game discovery, tracking, rating, and review platform built with React, Express, and MongoDB.**
 
-The project began as a semester application and evolved into a portfolio project focused on full-stack development, session-based authentication, third-party API integration, responsive UI design, data visualization, authorization, and backend data integrity.
+MyGamingList lets users discover games, organize a personal library, rate completed titles, write reviews, favorite games, and explore public player profiles backed by real activity data.
 
-> **Live Demo:** Add the current Vercel production URL here before sharing the repository on a resume.
+Originally developed as a semester project, MyGamingList was expanded into a production-style portfolio application with session-based authentication, third-party API integration, protected REST endpoints, responsive design, accessibility-focused UI behavior, and server-side data validation.
 
-## Features
+### [Live Demo](https://my-gaming-list-seven.vercel.app/mygaminglist/)
 
-- Search IGDB's game catalog with pagination and Xbox, PlayStation, Nintendo, and PC filters.
-- Filter out DLC/add-on clutter while retaining main games, remakes, remasters, and standalone expansions.
-- View game descriptions, release information, developers/publishers, cover art, and screenshots.
-- View available PC store deals through CheapShark.
-- Create accounts and sign in using session-based authentication.
-- Confirm passwords during signup to reduce accidental password-entry mistakes.
-- Maintain a personal game list with:
-  - `playing`
-  - `completed`
-  - `plan to play`
-  - `dropped`
-- Rate completed games from 0.5 to 5 stars in half-star increments.
+---
+
+## Highlights
+
+- Search thousands of games using **IGDB** with platform filtering and pagination.
+- Browse game metadata, covers, screenshots, release information, developers, publishers, and ratings.
+- Discover **popular/trending games** directly from the homepage.
+- Track games as **Playing**, **Completed**, **Plan to Play**, or **Dropped**.
+- Rate completed games from **0.5–5 stars** in half-star increments.
+- Write, edit, and delete reviews with authenticated ownership checks.
+- Automatically synchronize reviewed games with the user's completed list and rating.
 - Favorite games and display them on public profiles.
-- Create, edit, and delete reviews.
-- Enforce ownership checks for list and review mutations on the backend.
-- View public user profiles with:
-  - total game count
-  - status distribution
-  - rating distribution
-  - favorite games
-- Browse another user's game list by status through a read-only public list.
-- Navigate from profile status charts directly to the corresponding personal or public list category.
-- Browse popular free-to-play PC games.
-- Responsive layouts with mobile/tablet media queries, visible focus states, and reduced-motion support.
+- View public user profiles with real list statistics and data visualizations.
+- Browse another user's game list by status in a read-only public view.
+- Compare current PC game deals through **CheapShark**.
+- Discover free-to-play PC games through **FreeToGame**.
+- Responsive layouts across desktop, laptop, tablet, and mobile viewports.
+- Keyboard focus states, reduced-motion support, touch-friendly controls, and other accessibility-focused responsive behavior.
+
+---
 
 ## Tech Stack
 
 ### Frontend
 
-- React 18
-- Vite
-- React Router
-- Axios
-- Recharts
-- Swiper
-- React Icons
-- CSS media queries and accessibility states
+- **React 18**
+- **Vite**
+- **React Router**
+- **Axios**
+- **Recharts**
+- **React Icons**
+- **CSS3** with responsive media queries and accessibility states
 
 ### Backend
 
-- Node.js
-- Express
-- MongoDB native driver
-- `express-session`
-- Mongo-backed session storage
-- bcrypt password hashing
-- Server-side validation and authorization
+- **Node.js**
+- **Express**
+- **MongoDB** / MongoDB Atlas
+- **express-session**
+- **connect-mongo**
+- **bcrypt**
 
 ### External APIs
 
-- **IGDB / Twitch Authentication** — game search, metadata, covers, platforms, and screenshots
-- **CheapShark** — PC store and deal information
+- **IGDB + Twitch OAuth** — game search, metadata, covers, screenshots, ratings, and platform information
+- **CheapShark** — PC store pricing and deals
 - **FreeToGame** — free-to-play PC game discovery
+
+### Deployment
+
+- **Vercel** — React frontend
+- **Render** — Express API
+- **MongoDB Atlas** — application data and persisted sessions
+
+---
+
+## Core Features
+
+### Game Discovery
+
+Users can search IGDB's catalog and filter results by major platform families including:
+
+- PC
+- PlayStation
+- Xbox
+- Nintendo
+
+The backend owns the IGDB integration and Twitch client-credentials flow, keeping API credentials out of the browser. Provider responses are normalized before being returned to the React frontend.
+
+Game pages include information such as:
+
+- cover artwork
+- description
+- release date
+- genres
+- platforms
+- developers and publishers
+- community rating
+- screenshots
+
+The backend also filters unwanted DLC/add-on results from search to keep discovery focused on useful standalone titles.
+
+### Personal Game Library
+
+Authenticated users can maintain a personal library with four statuses:
+
+```text
+Playing
+Completed
+Plan to Play
+Dropped
+```
+
+Users can:
+
+- add games to their library
+- move games between statuses
+- rate completed games
+- favorite titles
+- update existing entries
+- remove games from their list
+
+Ratings are validated server-side and only accepted in **0.5-star increments from 0.5 to 5**. Moving a game away from `completed` removes its rating to keep stored data consistent.
+
+### Reviews
+
+Users can create, edit, and delete reviews for games.
+
+The review workflow includes:
+
+- authenticated write operations
+- one review per user per game
+- 0.5–5 star rating validation
+- review-length validation
+- server-side ownership checks for edits and deletes
+- automatic synchronization between reviews and the user's completed-game list
+
+When a review is created or its rating is updated, the corresponding game is added to or updated in the user's **Completed** list. This keeps profile statistics, list ratings, and reviews consistent without requiring duplicate user actions.
+
+### Public Profiles & Analytics
+
+Each user has a public profile built from server-side aggregated list data.
+
+Profiles display:
+
+- account join date
+- total tracked games
+- games by status
+- favorite games
+- rating distribution
+
+Two **Recharts** visualizations turn real user activity into profile analytics:
+
+- **List Status Distribution** — pie chart of Playing, Completed, Planned, and Dropped games
+- **Rating Distribution** — bar chart showing the user's ratings from 0.5 to 5 stars
+
+Profile status navigation can lead to either the authenticated user's editable list or another user's read-only public list.
+
+### Deals & Free Games
+
+MyGamingList supplements game discovery with additional external data:
+
+- **CheapShark** provides available PC store deals and savings information.
+- **FreeToGame** powers a dedicated free-to-play discovery page.
+
+These requests are routed through the Express backend rather than coupling the frontend directly to third-party services.
+
+---
+
+## Authentication & Authorization
+
+MyGamingList uses **server-side sessions** rather than storing authentication tokens in browser storage.
+
+Authentication includes:
+
+- account creation
+- bcrypt password hashing
+- login and logout
+- persisted MongoDB-backed sessions
+- `httpOnly` session cookies
+- session restoration through an authenticated `/me` endpoint
+- protected React routes
+- protected Express routes
+
+For protected mutations, the backend derives the user ID from the authenticated session rather than trusting a user ID sent by the client.
+
+This is used to enforce ownership when users modify:
+
+- list entries
+- ratings
+- favorites
+- reviews
+
+Production session configuration also accounts for HTTPS/proxy deployment on Render.
+
+---
+
+## Validation & Data Integrity
+
+Validation is performed on the server for security and consistency, including:
+
+- username format and length
+- password requirements
+- valid game IDs
+- valid list statuses
+- game-title limits
+- valid half-star ratings
+- completed-game rating requirements
+- review content and maximum length
+- duplicate reviews
+- authenticated ownership of protected resources
+
+The backend also normalizes state transitions—for example, ratings are cleared when an entry is moved out of `completed`.
+
+---
+
+## Responsive Design & Accessibility
+
+The interface was tested and refined across phone, tablet, laptop, and desktop layouts while preserving the desktop visual design as closely as possible.
+
+Responsive behavior includes:
+
+- layouts that reflow instead of relying on clipped horizontal overflow
+- mobile-friendly navigation
+- responsive game cards, forms, lists, profiles, charts, and modals
+- touch-friendly interactive targets
+- visible keyboard focus indicators
+- `prefers-reduced-motion` support
+- hover-independent behavior for touch devices
+- forced-colors support
+- responsive chart and rating controls
+
+Homepage presentation also includes animated feature cards, a popular-games carousel, and decorative visual effects while respecting reduced-motion preferences.
+
+---
 
 ## Architecture
 
 ```text
-React / Vite
-      |
-      | Axios + credentialed requests
-      v
-Express REST API
-      |
-      |--------------------------|
-      |                          |
-      v                          v
-   MongoDB                  External APIs
-   users                    IGDB
-   list                     CheapShark
-   reviews                  FreeToGame
-   sessions
+                         ┌──────────────────────┐
+                         │    React + Vite      │
+                         │       Frontend       │
+                         └──────────┬───────────┘
+                                    │
+                              Axios / REST
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │   Express REST API   │
+                         │  Sessions + Auth     │
+                         └───────┬──────┬───────┘
+                                 │      │
+                  ┌──────────────┘      └───────────────┐
+                  ▼                                     ▼
+        ┌───────────────────┐                ┌─────────────────────┐
+        │   MongoDB Atlas   │                │    External APIs    │
+        │                   │                │                     │
+        │ • Users           │                │ • IGDB / Twitch    │
+        │ • Game lists      │                │ • CheapShark       │
+        │ • Reviews         │                │ • FreeToGame       │
+        │ • Sessions        │                │                     │
+        └───────────────────┘                └─────────────────────┘
 ```
 
-The frontend communicates with the Express API instead of directly handling sensitive third-party credentials. IGDB authentication credentials, database credentials, and session secrets remain on the backend.
+The frontend never receives IGDB/Twitch secrets or database credentials. Sensitive integrations remain server-side behind the Express API.
 
-## Authentication
+---
 
-MyGamingList uses server-side sessions rather than storing authentication tokens in browser storage.
+## Application Routes
 
-The authentication flow includes:
-
-- username and password signup
-- password confirmation during signup
-- bcrypt password hashing
-- login and logout
-- MongoDB-backed session persistence
-- `httpOnly` session cookies
-- authenticated `/me` requests for restoring login state
-- protected frontend routes for account-specific pages
-
-In production, session cookies use `Secure` and `SameSite=None` to support communication between separately hosted frontend and backend deployments.
-
-## Security and Data Integrity
-
-The current implementation includes:
-
-- bcrypt password hashing
-- Mongo-backed server sessions
-- `httpOnly` session cookies
-- `Secure` + `SameSite=None` cookies in production
-- credentialed CORS configuration
-- session-derived ownership checks for list mutations
-- session-derived ownership checks for review edits and deletes
-- server-side validation for usernames, passwords, statuses, ratings, titles, and reviews
-- completed-game rating validation
-- prevention of ratings being retained on non-completed list statuses
-- a 1 MB JSON request-body limit
-- backend environment variables for secrets and API credentials
-
-The backend does not trust a user ID supplied by the browser when modifying protected user data. Ownership is derived from the authenticated session.
-
-## Personal and Public Lists
-
-MyGamingList separates editable personal-list functionality from public read-only list functionality.
-
-### Personal List
-
-The authenticated user's personal list is available through:
+Some of the primary frontend routes include:
 
 ```text
-/mygaminglist/list
+/mygaminglist/                         Homepage
+/mygaminglist/games/page/:number       Game search results
+/mygaminglist/game/:gameID              Game details
+/mygaminglist/game/:gameID/images       Screenshot viewer
+/mygaminglist/reviews/:gameID           Public game reviews
+/mygaminglist/newreview/:gameID         Create review
+/mygaminglist/myreviews                 Manage personal reviews
+/mygaminglist/list                      Personal game library
+/mygaminglist/profile/:username         Public profile
+/mygaminglist/profile/:username/list    Public user list
+/mygaminglist/free                      Free-to-play games
 ```
 
-It allows the owner to:
+---
 
-- switch between list categories
-- update a game's status
-- update completed-game ratings
-- remove entries
-- manage list-specific data
+## Local Development
 
-Backend mutation routes remain protected by authentication and ownership checks.
+### Prerequisites
 
-### Public Lists
+- Node.js
+- npm
+- MongoDB Atlas database or compatible MongoDB instance
+- IGDB/Twitch API credentials
 
-Public profiles expose read-only versions of another user's list.
-
-A public list is available through routes such as:
-
-```text
-/mygaminglist/profile/:username/list?status=completed
-```
-
-Public list views allow visitors to:
-
-- switch between the user's list categories
-- view game covers and titles
-- view completed-game ratings
-- open a game's information page
-
-They do **not** expose edit or delete controls.
-
-This keeps the frontend behavior consistent with the backend authorization model:
-
-```text
-                     Read      Update      Delete
-Own list              Yes        Yes         Yes
-Another user's list   Yes        No          No
-```
-
-## Public Profiles
-
-Public profiles display aggregated information about each user's gaming activity.
-
-Profile data includes:
-
-- username
-- account creation date
-- total list entries
-- number of games currently playing
-- number of completed games
-- number of dropped games
-- number of planned games
-- favorite games
-- list-status distribution
-- rating distribution
-
-The profile visualizations are powered by real user list data using Recharts.
-
-### Status Chart Navigation
-
-The list-status pie chart changes behavior depending on whose profile is being viewed.
-
-When viewing your own profile:
-
-```text
-Profile status
-      ↓
-Editable personal list
-```
-
-For example:
-
-```text
-/mygaminglist/list?status=completed
-```
-
-When viewing another user's profile:
-
-```text
-Profile status
-      ↓
-Read-only public list
-```
-
-For example:
-
-```text
-/mygaminglist/profile/username/list?status=completed
-```
-
-Public profile analytics are calculated server-side rather than giving the frontend access to another user's authenticated list endpoint.
-
-## Game Data
-
-### IGDB
-
-IGDB is the primary game-data provider.
-
-The backend handles Twitch client-credential authentication and exposes frontend-friendly endpoints for:
-
-- game search
-- game details
-- cover images
-- screenshots
-- release dates
-- developers and publishers
-- platform information
-
-Platform-specific filtering is handled by backend-owned IGDB platform groups so provider-specific IDs do not need to be spread throughout the React application.
-
-### CheapShark
-
-CheapShark provides PC pricing and deal information for game information pages.
-
-The backend acts as an intermediary between the frontend and CheapShark and returns relevant store/deal information.
-
-### FreeToGame
-
-FreeToGame powers the application's free-to-play discovery page and provides popular free PC game information.
-
-## Data Visualizations
-
-Public profiles include two Recharts visualizations backed by actual user data.
-
-### List Status Distribution
-
-A pie chart displays the number of games in:
-
-- Playing
-- Completed
-- Plan to Play
-- Dropped
-
-Pie-chart selections also act as navigation to the corresponding list category.
-
-### Rating Distribution
-
-A bar chart displays how many completed games the user has assigned each rating from:
-
-```text
-0.5 → 5.0
-```
-
-This data is aggregated by the backend before being returned to the profile page.
-
-## Reviews
-
-Users can create reviews associated with individual games.
-
-Review functionality includes:
-
-- half-star ratings
-- review text
-- viewing reviews from other users
-- editing your own reviews
-- deleting your own reviews
-
-The backend determines review ownership from the authenticated session before allowing mutations.
-
-## Local Setup
-
-### 1. Clone the Repository
+### 1. Clone the repository
 
 ```bash
-git clone https://github.com/muntay89/MyGamingList.git
+git clone <repository-url>
 cd MyGamingList
 ```
 
-### 2. Configure the Backend
+### 2. Configure the backend
 
 ```bash
 cd BackendPract
-cp .env.example .env
 npm install
+cp .env.example .env
 ```
 
-Configure:
+Populate `.env`:
 
 ```env
-MONGO_URI=
+MONGO_URI=your_mongodb_connection_string
 FRONTEND_ORIGIN=http://localhost:5173
 NODE_ENV=development
 PORT=8000
-SESSION_SECRET=
-IGDB_CLIENT_ID=
-IGDB_CLIENT_SECRET=
+SESSION_SECRET=your_session_secret
+IGDB_CLIENT_ID=your_twitch_client_id
+IGDB_CLIENT_SECRET=your_twitch_client_secret
 ```
 
-Start the backend:
+Start the API:
 
 ```bash
 npm run dev
 ```
 
-### 3. Configure the Frontend
+The backend runs on:
 
-Open another terminal:
+```text
+http://localhost:8000
+```
+
+### 3. Start the frontend
+
+In a second terminal:
 
 ```bash
 cd React
-cp .env.example .env
 npm install
-```
-
-Configure:
-
-```env
-VITE_API_BASE_URL=http://localhost:8000/api/v1
-```
-
-Start Vite:
-
-```bash
 npm run dev
 ```
 
-For a production build:
-
-```bash
-npm run build
-```
-
-## API Overview
-
-### Authentication
+Vite will provide the local frontend URL, typically:
 
 ```text
-/api/v1/auth
-
-POST /signup
-POST /login
-POST /logout
-GET  /me
+http://localhost:5173
 ```
 
-### IGDB
+---
+
+## Production Flow
+
+In production, the Vercel frontend sends API requests through `/api/v1`. Vercel rewrites those requests to the deployed Express service on Render.
 
 ```text
-/api/v1/igdb
-
-GET /games
-GET /games/:id
-GET /games/:id/screenshots
+Browser
+   ↓
+Vercel / React
+   ↓  /api/v1/*
+Vercel Rewrite
+   ↓
+Render / Express
+   ↓
+MongoDB Atlas + External APIs
 ```
 
-### Personal Lists
+This keeps the browser-facing application clean while preserving server-side authentication and API credentials.
 
-```text
-/api/v1/list
+---
 
-POST   /new
-GET    /status/:status
-GET    /favorites
-GET    /:gameId
-PUT    /:listEntryId
-DELETE /:listEntryId
-```
+## Engineering Takeaways
 
-These routes are used for authenticated personal-list functionality.
+Building MyGamingList required solving problems beyond basic CRUD functionality, including:
 
-### Reviews
+- migrating game data from an earlier provider to IGDB
+- implementing and caching Twitch OAuth credentials server-side
+- adapting third-party API responses into a stable frontend data model
+- designing authenticated session persistence across production hosting
+- enforcing authorization at the API layer instead of relying on the UI
+- synchronizing reviews, ratings, and list state
+- building public analytics from aggregated MongoDB data
+- handling responsive layouts across substantially different viewports
+- improving keyboard, touch, focus, and reduced-motion accessibility
+- debugging frontend/backend deployment behavior across Vercel, Render, and MongoDB Atlas
 
-```text
-/api/v1/reviews
+The result is a full-stack application that demonstrates both user-facing product development and backend engineering concerns such as authentication, authorization, validation, API integration, persistence, and deployment.
 
-GET    /game/:gameId
-GET    /my/game
-GET    /my/game/:gameId
-POST   /new
-PUT    /:reviewId
-DELETE /:reviewId
-```
+---
 
-### Profiles
+## Future Improvements
 
-```text
-/api/v1/profiles
+Potential next steps include:
 
-GET /:username/profile
-GET /:username/list/:status
-```
+- automated frontend and API test coverage
+- account management features
+- richer social/profile functionality
+- caching frequently requested third-party game data
+- expanded search and discovery filters
+- additional profile statistics and recommendation features
 
-The profile list endpoint is read-only and is used to display another user's public list.
+---
 
-### Deals
+## Author
 
-```text
-/api/v1/deals
+**Monte Bradford**  
+Computer Science — California State University, Fullerton
 
-GET /cheapshark/search
-GET /free-games
-```
-
-## Notable Engineering Work
-
-### RAWG to IGDB Migration
-
-The original version of MyGamingList used RAWG as its primary game-data provider.
-
-The application was later migrated to IGDB without requiring a full rewrite of the React frontend. The Express backend acts as an adapter between IGDB and the application's existing frontend data model.
-
-This allowed the application to retain its existing UI while changing the underlying game-data provider.
-
-### Public vs. Private Data
-
-Personal and public list access are deliberately separated.
-
-Authenticated list mutations use:
-
-```text
-/api/v1/list
-```
-
-while another user's read-only list is retrieved through:
-
-```text
-/api/v1/profiles/:username/list/:status
-```
-
-This allows profiles to expose useful social functionality without weakening ownership protections on personal list mutations.
-
-### Session-Derived Ownership
-
-List and review mutations do not rely on a browser-supplied user ID to determine ownership.
-
-Instead, the backend derives the authenticated user's identity from the server session and combines it with the requested resource ID when performing updates or deletes.
-
-Conceptually:
-
-```text
-Requested entry ID
-        +
-Authenticated session user
-        ↓
-Matching owned resource
-```
-
-A request cannot modify another user's entry simply by supplying that entry's identifier.
-
-### Data Consistency
-
-Completed games require a valid rating in half-star increments.
-
-Valid ratings are:
-
-```text
-0.5
-1.0
-1.5
-2.0
-2.5
-3.0
-3.5
-4.0
-4.5
-5.0
-```
-
-Non-completed statuses do not retain a rating.
-
-These rules are enforced by the backend on both list creation and list updates rather than relying exclusively on frontend validation.
-
-### Responsive Design
-
-The interface uses custom CSS and responsive media queries rather than a component styling framework.
-
-Responsive work includes adjustments for:
-
-- navigation
-- game search results
-- game-information pages
-- personal lists
-- public lists
-- reviews
-- profile statistics
-- Recharts visualizations
-- authentication forms
-- smaller mobile viewports
-
-Reduced-motion rules and focus states are also included for accessibility.
-
-## Project Structure
-
-```text
-MyGamingList/
-|
-|-- BackendPract/
-|   |-- api/
-|   |-- dao/
-|   |-- middleware/
-|   |-- routes/
-|   |-- .env.example
-|   |-- server.js
-|   `-- index.js
-|
-|-- React/
-|   |-- src/
-|   |   |-- api/
-|   |   |-- components/
-|   |   |-- context/
-|   |   |-- pages/
-|   |   |-- App.jsx
-|   |   `-- App.css
-|   |
-|   |-- public/
-|   `-- .env.example
-|
-`-- README.md
-```
-
-## Deployment
-
-The frontend is designed for deployment on Vercel and the Express backend on a Node hosting platform such as Render.
-
-Production environment variables should be configured through the hosting providers rather than committed to Git.
-
-Before publishing the project on a resume:
-
-1. Add the current Vercel production URL to the Live Demo section.
-2. Verify the latest GitHub commit is deployed by both Vercel and Render.
-3. Verify frontend and backend production environment variables.
-4. Verify signup, login, and logout.
-5. Verify adding, editing, and deleting personal-list entries.
-6. Verify completed-game ratings.
-7. Verify favorites.
-8. Verify review creation, editing, and deletion.
-9. Verify your own profile chart navigation.
-10. Verify another user's read-only public list.
-11. Verify responsive layouts on desktop and mobile.
-12. Revoke any legacy RAWG API key that may remain exposed in old Git history.
-
-## Future Work
-
-Potential future improvements include:
-
-- automated integration tests for authenticated API routes
-- database-level unique indexes for usernames and per-user game-list entries
-- shared/distributed rate limiting if the backend is scaled horizontally
-- caching third-party API responses if traffic increases
-- expanded profile and list filtering
-- personalized game recommendations using accumulated rating and list data
-
-## Background
-
-MyGamingList was developed as a solo project and expanded beyond its original course requirements into a deployable full-stack portfolio application.
-
-The project demonstrates practical experience with:
-
-- React application architecture
-- REST API development
-- MongoDB persistence
-- authentication and sessions
-- authorization and ownership
-- third-party APIs
-- data visualization
-- responsive CSS
-- public/private data modeling
-- deployment-oriented configuration
