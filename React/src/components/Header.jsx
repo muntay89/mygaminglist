@@ -18,7 +18,6 @@ export default function Header(props) {
         <span className='acc-methods'>
           {!isLoggedIn ? (
             <>
-              <Link to = "/mygaminglist/list" id = "list"><FaBars className='list-icon'/></Link>
               <Link to="/mygaminglist/login" className="headerbutt" id="Login">
                 Login
               </Link>
@@ -28,8 +27,7 @@ export default function Header(props) {
             </>) : (
             <>
             <Link id = 'profile-name' to = {`/mygaminglist/profile/${user.username}`} style={{display: "flex", flexDirection: 'row'}}>
-              <FaUser style={{marginRight: '10px'}}></FaUser>{user.username}</Link>
-            <Link to = "/mygaminglist/list" id = "list"><FaBars className='list-icon'/></Link>
+            <FaUser style={{marginRight: '10px'}}></FaUser>{user.username}</Link>
             <button
               className="headerbutt"
               id="Logout"

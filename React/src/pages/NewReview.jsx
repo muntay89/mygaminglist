@@ -23,7 +23,7 @@ export default function Newreview (props) {
           navigate(`/mygaminglist/myreviews/${gameID}`)
           return 
         }
-        props.setIntro(`${game.name} - New Review`)
+        props.setIntro(`${gameResponse.data.name} - New Review`)
       }
       catch(error) {
         console.error('Unable to load game:', error)

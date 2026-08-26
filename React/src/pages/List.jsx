@@ -263,11 +263,11 @@ export default function List (props) {
               <FaTimesCircle className='exit-list' onClick={()=> {setShow(false); setTimeout(()=> {setEditOpen(false); setDeleteOpen(false)}, 500)}}/>
         </div>
         </div>
-      ))): 
-      (<div className="no-results" style={{ backgroundColor: "hsl(0, 1%, 90%)" }}>
-          <h2 className="no-res-head">NO ENTRIES YET...</h2>
-          <FaHeartBroken className="heart-crack" />
-        </div>)}
+        ))): 
+        (<div className="no-results" style={{ backgroundColor: "hsl(0, 1%, 90%)" }}>
+            <h2 className="no-res-head">NO ENTRIES YET...</h2>
+            <FaHeartBroken className="heart-crack" />
+          </div>)}
       <div className='opac-wrap' style={{display: (editOpen || deleteOpen) ? 'block' : 'none'}}>
       </div>
       

@@ -614,18 +614,6 @@ form select, input{
     }
 }
 
-@keyframes featureContentReveal {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @keyframes characterReveal {
     from {
         opacity: 0;
@@ -637,6 +625,30 @@ form select, input{
         filter: blur(0);
     }
 }
+
+@keyframes featureCardReveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes trending-card-load {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+  }
+
+  to {
+    filter: blur(0);
+  }
+}
+
 .homepage-title{
   font-size: 135px;
   opacity: 0;
@@ -716,7 +728,10 @@ form select, input{
   padding: 1.5rem;
   transform: translate(-50%, -50%) scale(0.7);
   opacity: 0;
-  transition: transform 0.45s ease, opacity 0.45s ease;
+  transition:
+    transform 0.52s cubic-bezier(0.22, 0.61, 0.36, 1),
+    opacity 0.32s ease;
+  will-change: transform, opacity;
   pointer-events: none;
   display: flex;
   flex-direction: column;
@@ -743,8 +758,14 @@ form select, input{
   z-index: 4;
 }
 
-.homepage-game.hidden {
-  transform: translate(-50%, -50%) scale(0.6);
+.homepage-game.hidden-left {
+  transform: translate(-255%, -50%) scale(0.6);
+  opacity: 0;
+  z-index: 1;
+}
+
+.homepage-game.hidden-right{
+  transform: translate(155%, -50%) scale(0.6);
   opacity: 0;
   z-index: 1;
 }
@@ -800,10 +821,19 @@ form select, input{
   position: relative;
 }
 .trending-card {
-    padding: 0;
-    text-decoration: none;
+  padding: 0;
+  text-decoration: none;
+  animation: trending-card-load 0.6s ease-out;
 }
-
+.trending-card.active {
+  animation-delay: 0.05s;
+}
+.trending-card.left {
+  animation-delay: 0.15s;
+}
+.trending-card.right {
+  animation-delay: 0.25s;
+}
 .trending-cover {
     width: 100%;
     height: 60%;
@@ -842,15 +872,12 @@ form select, input{
   font-family: "VT323", monospace;
 }
 .homepage-feature {
-  /* width: 225px; */
   height: 150px;
   padding: 1rem;
   border-radius: 18px;
   font-size: 15px;
   box-sizing: border-box;
   color: white;
-  transition: transform 0.45s ease, opacity 0.45s ease;
-  pointer-events: none;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -858,13 +885,36 @@ form select, input{
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(8px);
   filter: drop-shadow(0 0 5px hsl(0, 96%, 29%));
+  opacity: 0;
+  transform: translateY(18px) scale(0.98);
+  pointer-events: auto;
+}
+.homepage-ready .homepage-feature {
+  animation:
+    featureCardReveal
+    0.62s
+    cubic-bezier(0.22, 0.61, 0.36, 1)
+    both;
+}
+.homepage-ready .homepage-feature:nth-child(1) {
+  animation-delay: 0.25s;
+}
+
+.homepage-ready .homepage-feature:nth-child(2) {
+  animation-delay: 0.35s;
+}
+
+.homepage-ready .homepage-feature:nth-child(3) {
+  animation-delay: 0.45s;
+}
+
+.homepage-ready .homepage-feature:nth-child(4) {
+  animation-delay: 0.55s;
 }
 .homepage-feature:hover{
   filter: drop-shadow(0 0 25px hsl(0, 96%, 29%));
 }
 .homepage-ready .feature-text {
-  animation: featureContentReveal 0.65s ease-out forwards;
-  animation-delay: 0.35s;
   border: 1px solid hsl(0, 96%, 29%);
   border-radius: 50%;
   text-align: center;
@@ -874,11 +924,6 @@ form select, input{
   aspect-ratio: 1/1;
   margin-top: 10px;
 }
-.homepage-ready .feature-side {
-  animation: featureContentReveal 0.65s ease-out forwards;
-  animation-delay: 0.48s;
-}
-
 #footer {
   width: 100%;
   height: 60px;

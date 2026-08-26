@@ -73,7 +73,7 @@ export default function Homepage ({setIntro}){
     useEffect(() => {
       const loadTrending = async () => {
         try{
-          const response = await api.get('igdb/games/trending')
+          const response = await api.get('/igdb/games/trending')
           console.log('trending', trending)
           setTrending(response.data)
         }
@@ -94,18 +94,24 @@ export default function Homepage ({setIntro}){
 
     const nextSlide = () => {
       setActiveIndex((prev) => (prev + 1) % trending.length);
-    };
+    }
 
   const getCardPosition = (index) => {
-    const total = trending.length;
-    const leftIndex = (activeIndex - 1 + total) % total;
-    const rightIndex = (activeIndex + 1) % total;
+    const total = trending.length
+    if (!total) return 'hidden-right'
 
-    if (index === activeIndex) return 'active';
-    if (index === leftIndex) return 'left';
-    if (index === rightIndex) return 'right';
-    return 'hidden';
-  };
+    let offset = (index - activeIndex + total) % total
+
+    if (offset > total / 2) {
+      offset -= total
+    }
+
+    if (offset === 0) return 'active'
+    if (offset === -1) return 'left'
+    if (offset === 1) return 'right'
+
+    return offset < 0 ? 'hidden-left' : 'hidden-right'
+  } 
 
   if (loading){
     return(
@@ -128,9 +134,7 @@ export default function Homepage ({setIntro}){
           <Link className="homepage-signup" to = '/mygaminglist/signup'>Get Started</Link>
           <div className="homepage-features">
             {features.map((feature, index) => (
-              <div
-                  className={`homepage-feature`}
-                >
+              <div key = {feature.text} className='homepage-feature'>
                   <span className="feature-text">
                     {feature.icon}
                   </span>
