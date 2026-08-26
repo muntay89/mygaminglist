@@ -10,7 +10,7 @@ export default function Navbar(props) {
     <nav className="navbar">
       <div className='nav-select'>
         <ul id="navbar-main">
-          <li><Link to = "/mygaminglist/" className="navbar-el" onClick={()=> props.handleClick()}>Home</Link></li>
+          <li><Link to = "/mygaminglist" className="navbar-el" onClick={()=> props.handleClick()}>Home</Link></li>
           <li><Link to = "/mygaminglist/list"  className='navbar-el'>List</Link></li>
           <li className='navbar-hide'><Link to = "/mygaminglist/myreviews" className="navbar-el" >Reviews</Link></li>
           <li className='navbar-hide'><Link to = '/mygaminglist/free' className="navbar-el">Free to Play</Link></li>

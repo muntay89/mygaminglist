@@ -14,7 +14,7 @@ export default function Header(props) {
   return(
     <span className="top">
         <h2 className="title">
-        <Link to = "/mygaminglist/" className="home" onClick={() => props.handleClick()}>MyGamingList</Link>
+        <Link to = "/mygaminglist" className="home" onClick={() => props.handleClick()}>MyGamingList</Link>
         <span className='acc-methods'>
           {!isLoggedIn ? (
             <>
