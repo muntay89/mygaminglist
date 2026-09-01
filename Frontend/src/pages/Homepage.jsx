@@ -38,30 +38,14 @@ export default function Homepage ({setIntro}){
   const [trending, setTrending] = useState([])
   const [trendingLoading, setTrendingLoading] = useState(true)
   const [trendingError, setTrendingError] = useState("")
-  const displaygames = [...trending, ...trending];
 
     useEffect(()=> {
       setIntro('Welcome to MyGamingList!')
     },[])
 
     useEffect(() => {
-      const images = [geralt, tlou, arthur]
-
-      useEffect(() => {
-        const frame = requestAnimationFrame(() => {
-          setAssetsLoaded(true)
-        })
-
-        return () => cancelAnimationFrame(frame)
-      }, [])
-      const fontsLoaded = document.fonts ? document.fonts.ready : Promise.resolve()
-      Promise.all([...imagePromise, fontsLoaded]).then(() => {
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            setAssetsLoaded(true)
-          })
-        })
-      })
+      const frame = requestAnimationFrame(() => {setAssetsLoaded(true)})
+      return () => cancelAnimationFrame(frame);
     }, [])
 
     useEffect(() => {
@@ -70,14 +54,14 @@ export default function Homepage ({setIntro}){
           let response
 
           try {
-            const response = await api.get('/igdb/games/trending', {timeout: 30000})
+            response = await api.get('/igdb/games/trending', {timeout: 30000})
           }
           catch {
             await new Promise(resolve => setTimeout(resolve, 1000))
             response = await api.get('/igdb/games/trending', {timeout: 30000})
-            setTrending(response.data)
-            setTrendingError('')
           }
+          setTrending(response.data)
+          setTrendingError('')
         }
         catch(error) {
           console.error('Trending games failed:', error)
