@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom"
 import { api } from "../api/client"
 import Loader from '../components/Loader';
@@ -34,7 +33,6 @@ const features = [
 ]
 
 export default function Homepage ({setIntro}){
-  const { loading } = useAuth();
   const [activeIndex, setActiveIndex] = useState(0);
   const [assetsLoaded, setAssetsLoaded] = useState(false)
   const [trending, setTrending] = useState([])
@@ -49,17 +47,13 @@ export default function Homepage ({setIntro}){
     useEffect(() => {
       const images = [geralt, tlou, arthur]
 
-      const imagePromise = images.map((src) => {
-        return new Promise((resolve) => {
-          const img = new Image()
-          img.onload = resolve
-          img.onerror = resolve
-          img.src = src
-          if (img.complete) {
-            resolve()
-          }
+      useEffect(() => {
+        const frame = requestAnimationFrame(() => {
+          setAssetsLoaded(true)
         })
-      })
+
+        return () => cancelAnimationFrame(frame)
+      }, [])
       const fontsLoaded = document.fonts ? document.fonts.ready : Promise.resolve()
       Promise.all([...imagePromise, fontsLoaded]).then(() => {
         requestAnimationFrame(() => {
@@ -72,14 +66,22 @@ export default function Homepage ({setIntro}){
 
     useEffect(() => {
       const loadTrending = async () => {
-        try{
-          const response = await api.get('/igdb/games/trending')
-          console.log('trending', trending)
-          setTrending(response.data)
+        try {
+          let response
+
+          try {
+            const response = await api.get('/igdb/games/trending', {timeout: 30000})
+          }
+          catch {
+            await new Promise(resolve => setTimeout(resolve, 1000))
+            response = await api.get('/igdb/games/trending', {timeout: 30000})
+            setTrending(response.data)
+            setTrendingError('')
+          }
         }
-        catch (error) {
-          console.error(error)
-          setTrendingError('Unable to load trending games')
+        catch(error) {
+          console.error('Trending games failed:', error)
+          setTrendingError('Unable to load popular games.')
         }
         finally{
           setTrendingLoading(false)
@@ -113,20 +115,9 @@ export default function Homepage ({setIntro}){
     return offset < 0 ? 'hidden-left' : 'hidden-right'
   } 
 
-  if (loading){
-    return(
-    <div className='loader' id = 'homepage-loader'>
-        <PacmanLoader color="white" />
-      </div>)
-  }
+  
   return(
     <>
-    {!assetsLoaded && (
-      <div className='loader' id = 'homepage-loader'>
-        <PacmanLoader color="white" />
-      </div>
-    )}
-
       <div className={`homepage ${assetsLoaded ? 'homepage-ready' : 'homepage-loading'}`}>
         <div className='homepage-cont'>
           <p className='homepage-title' >MyGamingList</p>
@@ -149,6 +140,16 @@ export default function Homepage ({setIntro}){
             <div className="homepage-carousel-track">
               <p className="trending-heading">Popular Games</p>
               <div className="trending-cont">
+                {trendingLoading && (
+                  <p className="trending-status">
+                    Loading popular games...
+                  </p>
+                )}
+                {trendingError && (
+                  <p className="trending-status">
+                    {trendingError}
+                  </p>
+                )}
                 {trending.map((game, index) => (
                   <Link key={game.id} to = {`/mygaminglist/game/${game.id}`} className={`homepage-game trending-card ${getCardPosition(index)}`}>
                     <img src = {game.background_image} alt = '' className="trending-cover"></img>
