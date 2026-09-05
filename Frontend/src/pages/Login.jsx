@@ -10,10 +10,10 @@ export const Login = () => {
     const location = useLocation()
     const { login, loading, isLoggedIn } = useAuth();
 
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState(""); // not used yet (no backend), but captured
-    const [showPass, setShowPass] = useState(false);
-    const [submitting, setSubmitting] = useState(false);
+    const [username, setUsername] = useState("")
+    const [password, setPassword] = useState("") 
+    const [showPass, setShowPass] = useState(false)
+    const [submitting, setSubmitting] = useState(false)
     const [error, setError] = useState("")
 
     useEffect(() => {
@@ -43,11 +43,6 @@ export const Login = () => {
         }finally{
             setSubmitting(false)
         }
-    }
-    if (loading) {
-        return(
-             <Loader />
-            )
     }
     return(
         <div className='auth-container'>

@@ -48,13 +48,6 @@ export const Signup = () => {
             setSubmitting(false)
         }
     }
-    if (loading) {
-    return (
-      <div style={{ display: "grid", placeItems: "center", minHeight: "50vh" }}>
-        <Loader />
-      </div>
-    );
-  }
     return(
         <div className='auth-container'>
             <form className = "auth-form" onSubmit={handleSubmit}>
