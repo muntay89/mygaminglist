@@ -3128,13 +3128,13 @@ margin-bottom: auto;
 
   .acc-methods {
     width: 100%;
+    flex-wrap: unset;
     justify-content: center;
+    align-items: center;
   }
 
   .headerbutt {
     width: 150px;
-    /* flex: 1 1 96px; */
-    margin-left: 50px;
     padding: 8px;
     font-size: 1.125rem;
   }
